@@ -2,7 +2,7 @@
   "name": "table-editor",
   "version": "0.0.1",
   "description": "edit table structure and content",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
     "build": "./node_modules/.bin/webpack --env.production",
     "dev": "./node_modules/.bin/webpack-dev-server --inline --env.production=false"
