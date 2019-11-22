@@ -1,0 +1,2248 @@
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["te"] = factory();
+	else
+		root["te"] = factory();
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/editor.ts");
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./style/editor.scss":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./style/editor.scss ***!
+  \********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
+// Module
+exports.push([module.i, ".table-editor-0-0-1 {\n  display: inline-block;\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-0-0-1 * {\n    box-sizing: border-box; }\n  .table-editor-0-0-1 > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-0-0-1 > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/runtime/api.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+// eslint-disable-next-line func-names
+module.exports = function (useSourceMap) {
+  var list = []; // return the list of modules as css string
+
+  list.toString = function toString() {
+    return this.map(function (item) {
+      var content = cssWithMappingToString(item, useSourceMap);
+
+      if (item[2]) {
+        return "@media ".concat(item[2], "{").concat(content, "}");
+      }
+
+      return content;
+    }).join('');
+  }; // import a list of modules into the list
+  // eslint-disable-next-line func-names
+
+
+  list.i = function (modules, mediaQuery) {
+    if (typeof modules === 'string') {
+      // eslint-disable-next-line no-param-reassign
+      modules = [[null, modules, '']];
+    }
+
+    var alreadyImportedModules = {};
+
+    for (var i = 0; i < this.length; i++) {
+      // eslint-disable-next-line prefer-destructuring
+      var id = this[i][0];
+
+      if (id != null) {
+        alreadyImportedModules[id] = true;
+      }
+    }
+
+    for (var _i = 0; _i < modules.length; _i++) {
+      var item = modules[_i]; // skip already imported module
+      // this implementation is not 100% perfect for weird media query combinations
+      // when a module is imported multiple times with different media queries.
+      // I hope this will never occur (Hey this way we have smaller bundles)
+
+      if (item[0] == null || !alreadyImportedModules[item[0]]) {
+        if (mediaQuery && !item[2]) {
+          item[2] = mediaQuery;
+        } else if (mediaQuery) {
+          item[2] = "(".concat(item[2], ") and (").concat(mediaQuery, ")");
+        }
+
+        list.push(item);
+      }
+    }
+  };
+
+  return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+  var content = item[1] || ''; // eslint-disable-next-line prefer-destructuring
+
+  var cssMapping = item[3];
+
+  if (!cssMapping) {
+    return content;
+  }
+
+  if (useSourceMap && typeof btoa === 'function') {
+    var sourceMapping = toComment(cssMapping);
+    var sourceURLs = cssMapping.sources.map(function (source) {
+      return "/*# sourceURL=".concat(cssMapping.sourceRoot).concat(source, " */");
+    });
+    return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+  }
+
+  return [content].join('\n');
+} // Adapted from convert-source-map (MIT)
+
+
+function toComment(sourceMap) {
+  // eslint-disable-next-line no-undef
+  var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+  var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
+  return "/*# ".concat(data, " */");
+}
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var stylesInDom = {};
+
+var isOldIE = function isOldIE() {
+  var memo;
+  return function memorize() {
+    if (typeof memo === 'undefined') {
+      // Test for IE <= 9 as proposed by Browserhacks
+      // @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+      // Tests for existence of standard globals is to allow style-loader
+      // to operate correctly into non-standard environments
+      // @see https://github.com/webpack-contrib/style-loader/issues/177
+      memo = Boolean(window && document && document.all && !window.atob);
+    }
+
+    return memo;
+  };
+}();
+
+var getTarget = function getTarget() {
+  var memo = {};
+  return function memorize(target) {
+    if (typeof memo[target] === 'undefined') {
+      var styleTarget = document.querySelector(target); // Special case to return head of iframe instead of iframe itself
+
+      if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+        try {
+          // This will throw an exception if access to iframe is blocked
+          // due to cross-origin restrictions
+          styleTarget = styleTarget.contentDocument.head;
+        } catch (e) {
+          // istanbul ignore next
+          styleTarget = null;
+        }
+      }
+
+      memo[target] = styleTarget;
+    }
+
+    return memo[target];
+  };
+}();
+
+function listToStyles(list, options) {
+  var styles = [];
+  var newStyles = {};
+
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i];
+    var id = options.base ? item[0] + options.base : item[0];
+    var css = item[1];
+    var media = item[2];
+    var sourceMap = item[3];
+    var part = {
+      css: css,
+      media: media,
+      sourceMap: sourceMap
+    };
+
+    if (!newStyles[id]) {
+      styles.push(newStyles[id] = {
+        id: id,
+        parts: [part]
+      });
+    } else {
+      newStyles[id].parts.push(part);
+    }
+  }
+
+  return styles;
+}
+
+function addStylesToDom(styles, options) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i];
+    var domStyle = stylesInDom[item.id];
+    var j = 0;
+
+    if (domStyle) {
+      domStyle.refs++;
+
+      for (; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j]);
+      }
+
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j], options));
+      }
+    } else {
+      var parts = [];
+
+      for (; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j], options));
+      }
+
+      stylesInDom[item.id] = {
+        id: item.id,
+        refs: 1,
+        parts: parts
+      };
+    }
+  }
+}
+
+function insertStyleElement(options) {
+  var style = document.createElement('style');
+
+  if (typeof options.attributes.nonce === 'undefined') {
+    var nonce =  true ? __webpack_require__.nc : undefined;
+
+    if (nonce) {
+      options.attributes.nonce = nonce;
+    }
+  }
+
+  Object.keys(options.attributes).forEach(function (key) {
+    style.setAttribute(key, options.attributes[key]);
+  });
+
+  if (typeof options.insert === 'function') {
+    options.insert(style);
+  } else {
+    var target = getTarget(options.insert || 'head');
+
+    if (!target) {
+      throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
+    }
+
+    target.appendChild(style);
+  }
+
+  return style;
+}
+
+function removeStyleElement(style) {
+  // istanbul ignore if
+  if (style.parentNode === null) {
+    return false;
+  }
+
+  style.parentNode.removeChild(style);
+}
+/* istanbul ignore next  */
+
+
+var replaceText = function replaceText() {
+  var textStore = [];
+  return function replace(index, replacement) {
+    textStore[index] = replacement;
+    return textStore.filter(Boolean).join('\n');
+  };
+}();
+
+function applyToSingletonTag(style, index, remove, obj) {
+  var css = remove ? '' : obj.css; // For old IE
+
+  /* istanbul ignore if  */
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = replaceText(index, css);
+  } else {
+    var cssNode = document.createTextNode(css);
+    var childNodes = style.childNodes;
+
+    if (childNodes[index]) {
+      style.removeChild(childNodes[index]);
+    }
+
+    if (childNodes.length) {
+      style.insertBefore(cssNode, childNodes[index]);
+    } else {
+      style.appendChild(cssNode);
+    }
+  }
+}
+
+function applyToTag(style, options, obj) {
+  var css = obj.css;
+  var media = obj.media;
+  var sourceMap = obj.sourceMap;
+
+  if (media) {
+    style.setAttribute('media', media);
+  }
+
+  if (sourceMap && btoa) {
+    css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
+  } // For old IE
+
+  /* istanbul ignore if  */
+
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    while (style.firstChild) {
+      style.removeChild(style.firstChild);
+    }
+
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var singleton = null;
+var singletonCounter = 0;
+
+function addStyle(obj, options) {
+  var style;
+  var update;
+  var remove;
+
+  if (options.singleton) {
+    var styleIndex = singletonCounter++;
+    style = singleton || (singleton = insertStyleElement(options));
+    update = applyToSingletonTag.bind(null, style, styleIndex, false);
+    remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+  } else {
+    style = insertStyleElement(options);
+    update = applyToTag.bind(null, style, options);
+
+    remove = function remove() {
+      removeStyleElement(style);
+    };
+  }
+
+  update(obj);
+  return function updateStyle(newObj) {
+    if (newObj) {
+      if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap) {
+        return;
+      }
+
+      update(obj = newObj);
+    } else {
+      remove();
+    }
+  };
+}
+
+module.exports = function (list, options) {
+  options = options || {};
+  options.attributes = typeof options.attributes === 'object' ? options.attributes : {}; // Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+  // tags it will allow on a page
+
+  if (!options.singleton && typeof options.singleton !== 'boolean') {
+    options.singleton = isOldIE();
+  }
+
+  var styles = listToStyles(list, options);
+  addStylesToDom(styles, options);
+  return function update(newList) {
+    var mayRemove = [];
+
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i];
+      var domStyle = stylesInDom[item.id];
+
+      if (domStyle) {
+        domStyle.refs--;
+        mayRemove.push(domStyle);
+      }
+    }
+
+    if (newList) {
+      var newStyles = listToStyles(newList, options);
+      addStylesToDom(newStyles, options);
+    }
+
+    for (var _i = 0; _i < mayRemove.length; _i++) {
+      var _domStyle = mayRemove[_i];
+
+      if (_domStyle.refs === 0) {
+        for (var j = 0; j < _domStyle.parts.length; j++) {
+          _domStyle.parts[j]();
+        }
+
+        delete stylesInDom[_domStyle.id];
+      }
+    }
+  };
+};
+
+/***/ }),
+
+/***/ "./src/command.ts":
+/*!************************!*\
+  !*** ./src/command.ts ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
+var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
+var CmdDebugger = /** @class */ (function () {
+    function CmdDebugger() {
+    }
+    CmdDebugger.prototype.execute = function () {
+        debugger;
+        return true;
+    };
+    CmdDebugger.prototype.undo = function () {
+        return true;
+    };
+    return CmdDebugger;
+}());
+var CommandMacro = /** @class */ (function () {
+    function CommandMacro(commands) {
+        this.commands = commands || [];
+    }
+    CommandMacro.prototype.addCommand = function () {
+        var _a;
+        var cmds = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            cmds[_i] = arguments[_i];
+        }
+        (_a = this.commands).push.apply(_a, cmds);
+    };
+    CommandMacro.prototype.execute = function () {
+        for (var i = 0; i < this.commands.length; i++) {
+            if (!this.commands[i].execute()) {
+                log_1.default.error("CommandMacro fail on " + i + "th command.", this.commands);
+                debugger;
+                while (--i >= 0) {
+                    this.commands[i].undo();
+                }
+                return false;
+            }
+        }
+        return true;
+    };
+    CommandMacro.prototype.undo = function () {
+        var i = this.commands.length;
+        while (--i >= 0) {
+            if (!this.commands[i].undo()) {
+                var c = this.commands.length - 1;
+                while (++i <= c) {
+                    this.commands[i].execute();
+                }
+                return false;
+            }
+        }
+        return true;
+    };
+    return CommandMacro;
+}());
+exports.CommandMacro = CommandMacro;
+var CmdAddCell = /** @class */ (function () {
+    function CmdAddCell(table, td) {
+        this.table = table;
+        this.td = td;
+    }
+    CmdAddCell.prototype.execute = function () {
+        var rowRange = this.td.getRowRange();
+        var tr = this.table.getRowByIndex(rowRange[0]);
+        if (!tr) {
+            log_1.default.error('CmdAddCell', "Invalid rowRange: " + rowRange + ", colRange: " + this.td.getColRange());
+            return false;
+        }
+        return tr.addTd(this.td) > 0;
+    };
+    CmdAddCell.prototype.undo = function () {
+        return this.table.removeCell(this.td.getRowRange()[0], this.td.getColRange()[0]) > 0;
+    };
+    return CmdAddCell;
+}());
+var CmdDelCell = /** @class */ (function () {
+    function CmdDelCell(table, rowIdx, colIdx) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+    }
+    CmdDelCell.prototype.execute = function () {
+        this.td = this.table.getCell(this.rowIdx, this.colIdx);
+        if (!this.td) {
+            log_1.default.error('CmdDelCell', "Cell not found. rowIdx: " + this.rowIdx + ", colIdx: " + this.colIdx);
+            return false;
+        }
+        return this.table.removeCell(this.rowIdx, this.colIdx) > 0;
+    };
+    CmdDelCell.prototype.undo = function () {
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        return tr.addTd(this.td) > 0;
+    };
+    return CmdDelCell;
+}());
+var CmdAddColHeader = /** @class */ (function () {
+    function CmdAddColHeader(table, colIdx) {
+        this.table = table;
+        this.colIdx = colIdx;
+    }
+    CmdAddColHeader.prototype.execute = function () {
+        return this.table.addColHeader(this.colIdx) > 0;
+    };
+    CmdAddColHeader.prototype.undo = function () {
+        return this.table.delColHeader(this.colIdx) > 0;
+    };
+    return CmdAddColHeader;
+}());
+var CmdDelColHeader = /** @class */ (function () {
+    function CmdDelColHeader(table, colIdx) {
+        this.table = table;
+        this.colIdx = colIdx;
+    }
+    CmdDelColHeader.prototype.execute = function () {
+        return this.table.delColHeader(this.colIdx) > 0;
+    };
+    CmdDelColHeader.prototype.undo = function () {
+        return this.table.addColHeader(this.colIdx) > 0;
+    };
+    return CmdDelColHeader;
+}());
+var CmdSetCellRowRange = /** @class */ (function () {
+    function CmdSetCellRowRange(table, rowIdx, colIdx, newRange) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+        this.newRange = newRange;
+    }
+    CmdSetCellRowRange.prototype.execute = function () {
+        var td = this.table.getCell(this.rowIdx, this.colIdx);
+        if (!td) {
+            log_1.default.error('CmdSetCellRowRange', "Invalid position. rowIdx: " + this.rowIdx + ", colIdx: " + this.colIdx);
+            return false;
+        }
+        this.oldRange = td.getRowRange();
+        td.setRowRange(this.newRange);
+        return true;
+    };
+    CmdSetCellRowRange.prototype.undo = function () {
+        var td = this.table.getCell(this.rowIdx, this.colIdx);
+        td.setRowRange(this.oldRange);
+        return true;
+    };
+    return CmdSetCellRowRange;
+}());
+var CmdSetCellColRange = /** @class */ (function () {
+    function CmdSetCellColRange(table, rowIdx, colIdx, newRange) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+        this.newRange = newRange;
+    }
+    CmdSetCellColRange.prototype.execute = function () {
+        var td = this.table.getCell(this.rowIdx, this.colIdx);
+        if (!td) {
+            return false;
+        }
+        this.oldRange = td.getColRange();
+        td.setColRange(this.newRange);
+        return true;
+    };
+    CmdSetCellColRange.prototype.undo = function () {
+        var td = this.table.getCell(this.newRange[0], this.newRange[1]);
+        td.setColRange(this.oldRange);
+        return true;
+    };
+    return CmdSetCellColRange;
+}());
+var CmdAddBlankRow = /** @class */ (function () {
+    function CmdAddBlankRow(table, rowIdx) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+    }
+    CmdAddBlankRow.prototype.execute = function () {
+        return this.table.addRow(this.rowIdx) > 0;
+    };
+    CmdAddBlankRow.prototype.undo = function () {
+        return this.table.delRow(this.rowIdx) > 0;
+    };
+    return CmdAddBlankRow;
+}());
+var CmdDelBlankRow = /** @class */ (function () {
+    function CmdDelBlankRow(table, rowIdx) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+    }
+    CmdDelBlankRow.prototype.execute = function () {
+        return this.table.delRow(this.rowIdx) > 0;
+    };
+    CmdDelBlankRow.prototype.undo = function () {
+        return this.table.addRow(this.rowIdx) > 0;
+    };
+    return CmdDelBlankRow;
+}());
+var CmdRemoveBlankRows = /** @class */ (function () {
+    function CmdRemoveBlankRows(table) {
+        this.table = table;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdRemoveBlankRows.prototype.execute = function () {
+        var trs = this.table.getRows();
+        for (var i = 0; i < trs.length; i++) {
+            if (trs[i].getTds().length === 0) {
+                if (i !== trs.length - 1) {
+                    this.cmdMacro.addCommand(new CmdMoveRow(this.table, i + 1, -1));
+                }
+                this.cmdMacro.addCommand(new CmdDelBlankRow(this.table, i));
+            }
+        }
+        return this.cmdMacro.execute();
+    };
+    CmdRemoveBlankRows.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdRemoveBlankRows;
+}());
+var CmdAddRow = /** @class */ (function () {
+    function CmdAddRow(table, refRowIdx, above) {
+        this.table = table;
+        this.refRowIdx = refRowIdx;
+        this.above = above;
+    }
+    CmdAddRow.prototype.execute = function () {
+        var _this = this;
+        this.cmdMacro = new CommandMacro([]);
+        var trs = this.table.getRows();
+        if (this.refRowIdx < 0 || this.refRowIdx >= trs.length) {
+            log_1.default.error('CmdAddRow', "Invalid refRowIdx: " + this.refRowIdx);
+            return false;
+        }
+        var relativeTr = trs[this.refRowIdx];
+        var targetRowIdx = this.refRowIdx + (this.above ? 0 : 1);
+        // 对应位置增加空行
+        this.cmdMacro.addCommand(new CmdAddBlankRow(this.table, targetRowIdx));
+        // 空行下面的每行向下偏移一行
+        if (this.refRowIdx !== trs.length - 1 || this.above) {
+            var rowIdxWillMoveDown = this.above ? this.refRowIdx + 1 : this.refRowIdx + 2;
+            this.cmdMacro.addCommand(new CmdMoveRow(this.table, rowIdxWillMoveDown, 1));
+        }
+        // 按照相对行的单元格生成单元格并插入到空行中
+        var relativeTds = relativeTr.getTds();
+        var holeStartColIdx = 0;
+        for (var i = 0; i < relativeTds.length; i++) {
+            var relTd = relativeTds[i];
+            var relTdColRange = relTd.getColRange();
+            var relTdRowRange = relTd.getRowRange();
+            // 如果单元格跨行，向下增加行时不用加单元格，但需要把单元格的跨行+1
+            if (relTdRowRange[0] === relTdRowRange[1] || this.above) {
+                var tmpTd = new table_1.Td([targetRowIdx, targetRowIdx], [relTdColRange[0], relTdColRange[1]]);
+                this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
+            }
+            else {
+                this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, relTdRowRange[0], relTdColRange[0], [relTdRowRange[0], relTdRowRange[1] + 1]));
+            }
+            // 前面有空洞
+            if (holeStartColIdx < relTdColRange[0]) {
+                // 去上面的行中找到跨行的单元格，并取出跨了几行，如果相对的行《不是空洞的最后一个》或者《是最后一个并且向上添加行》
+                // 就把跨行的单元格增加跨一行
+                var tmpTds = this.table.getTdsCrossRow(this.refRowIdx - 1, holeStartColIdx, relTdColRange[0] - 1);
+                if (tmpTds.length === 0) {
+                    log_1.default.error('CmdAddRow', "Table data error");
+                    return false;
+                }
+                for (var j = 0; j < tmpTds.length; j++) {
+                    var tmpRowRange = tmpTds[j].getRowRange();
+                    if (tmpRowRange[1] !== this.refRowIdx || this.above) {
+                        tmpTds[j].setRowRange([tmpRowRange[0], tmpRowRange[1] + 1]);
+                    }
+                }
+            }
+            holeStartColIdx = relTdColRange[1] + 1;
+        }
+        // 最后如果有空洞
+        var lastColIdx = this.table.getColCount() - 1;
+        if (holeStartColIdx < lastColIdx) {
+            var tmpTds = this.table.getTdsCrossRow(this.refRowIdx - 1, holeStartColIdx, lastColIdx);
+            if (tmpTds.length === 0) {
+                log_1.default.error('CmdAddRow', "Table data error");
+                return false;
+            }
+            tmpTds.forEach(function (td) {
+                var tmpRowRange = td.getRowRange();
+                if (tmpRowRange[1] !== _this.refRowIdx || _this.above) {
+                    td.setRowRange([tmpRowRange[0], tmpRowRange[1] + 1]);
+                }
+            });
+        }
+        return this.cmdMacro.execute();
+    };
+    CmdAddRow.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdAddRow;
+}());
+exports.CmdAddRow = CmdAddRow;
+var CmdDelRow = /** @class */ (function () {
+    function CmdDelRow(table, rowIdx) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdDelRow.prototype.execute = function () {
+        var _this = this;
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        if (!tr) {
+            return false;
+        }
+        tr.getTds().forEach(function (td) {
+            _this.cmdMacro.addCommand(new CmdDelCell(_this.table, td.getRowRange()[0], td.getColRange()[0]));
+        });
+        this.cmdMacro.addCommand(new CmdDelBlankRow(this.table, this.rowIdx));
+        if (this.rowIdx < this.table.getRowCount() - 1) {
+            this.cmdMacro.addCommand(new CmdMoveRow(this.table, this.rowIdx, -1));
+        }
+        return this.cmdMacro.execute();
+    };
+    CmdDelRow.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdDelRow;
+}());
+exports.CmdDelRow = CmdDelRow;
+var CmdAddColumn = /** @class */ (function () {
+    function CmdAddColumn(table, refColIdx, left) {
+        this.table = table;
+        this.refColIdx = refColIdx;
+        this.left = left;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdAddColumn.prototype.execute = function () {
+        this.cmdMacro.addCommand(new CmdAddColHeader(this.table, this.left ? this.refColIdx : this.refColIdx + 1));
+        var colCount = this.table.getColCount();
+        var trs = this.table.getRows();
+        for (var i = 0; i < trs.length; i++) {
+            var tr = trs[i];
+            var tds = tr.getTds();
+            var holeStart = 0;
+            for (var j = 0; j < tds.length; j++) {
+                var td = tds[j];
+                var colRange = td.getColRange();
+                // 参考位置在空洞里，不需要加单元格，把该位置单元格往后移动一列
+                if (holeStart < colRange[0] && this.refColIdx === holeStart && this.refColIdx <= colRange[0] - 1) {
+                    this.cmdMacro.addCommand(new CmdMoveCol(this.table, i, colRange[0], 1));
+                    break;
+                }
+                // 参考位置在单元格中
+                if (this.refColIdx >= colRange[0] && this.refColIdx <= colRange[1]) {
+                    var rowRange = td.getRowRange();
+                    var cellWidth = colRange[1] - colRange[0] + 1;
+                    if (colRange[0] !== colRange[1] && ((!this.left && this.refColIdx < colRange[1])
+                        || (this.left && this.refColIdx > colRange[0]))) {
+                        // 如果单元格跨列，并且插入的位置在跨列范围内，跨列+1
+                        this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, rowRange[0], colRange[0], [colRange[0], colRange[1] + 1]));
+                    }
+                    else {
+                        // 插入不跨列的单元格
+                        var tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
+                        this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
+                        var tmpTd = new table_1.Td([i, i], [tmpColIdx, tmpColIdx]);
+                        this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
+                    }
+                    break;
+                }
+                // 如果在最后一个单元格后面是空洞并且参考位置在空洞里，什么都不做
+                if (j === tds.length - 1 && colRange[1] < colCount - 1 && this.refColIdx > colRange[1] && this.refColIdx <= colCount - 1) {
+                    // do nothing
+                }
+                holeStart = colRange[1] + 1;
+            }
+        }
+        var success = this.cmdMacro.execute();
+        if (success) {
+            var c = this.table.getColCount();
+            this.table.setColCount(c - 1);
+        }
+        return success;
+    };
+    CmdAddColumn.prototype.undo = function () {
+        var success = this.cmdMacro.undo();
+        if (success) {
+            var c = this.table.getColCount();
+            this.table.setColCount(c - 1);
+        }
+        return success;
+    };
+    return CmdAddColumn;
+}());
+exports.CmdAddColumn = CmdAddColumn;
+var CmdDelColumn = /** @class */ (function () {
+    function CmdDelColumn(table, colIdx) {
+        this.table = table;
+        this.colIdx = colIdx;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdDelColumn.prototype.execute = function () {
+        var _this = this;
+        this.cmdMacro.addCommand(new CmdDelColHeader(this.table, this.colIdx));
+        var firstTr = this.table.getRowByIndex(0);
+        var firstTd = firstTr.getTdByColIndex(this.colIdx);
+        if (!firstTd) {
+            log_1.default.warn('CmdDelColumn', "Invalid colIdx: " + this.colIdx);
+            return false;
+        }
+        var trs = this.table.getRows();
+        // 校验每行是否都有colIdx的单元格，保证左边列对齐
+        for (var i = 0; i < trs.length; i++) {
+            if (!trs[i].leftAlign(this.colIdx)) {
+                log_1.default.warn('CmdDelColumn', "Invalid colIdx: " + this.colIdx);
+                return false;
+            }
+        }
+        var firstTdIdx = firstTr.indexOf(firstTd);
+        var tdsOfFirstRow = firstTr.getTds();
+        // 第一行从colIdx单元格往后依次检查，保证列对齐
+        var rightAlignColIdx;
+        var rightAligned = false;
+        for (var i = firstTdIdx; i < tdsOfFirstRow.length; i++) {
+            rightAlignColIdx = tdsOfFirstRow[i].getColRange()[1];
+            if (trs.every(function (tr) { return tr.rightAlign(rightAlignColIdx); })) {
+                rightAligned = true;
+                break;
+            }
+        }
+        if (!rightAligned) {
+            return false;
+        }
+        var offset = rightAlignColIdx - this.colIdx + 1;
+        trs.forEach(function (tr, i) {
+            var tdsMatched = tr.getTdsInColRange([_this.colIdx, rightAlignColIdx]);
+            tdsMatched.forEach(function (td) {
+                _this.cmdMacro.addCommand(new CmdDelCell(_this.table, i, td.getColRange()[0]));
+            });
+            _this.cmdMacro.addCommand(new CmdMoveCol(_this.table, i, _this.colIdx, -offset));
+        });
+        var success = this.cmdMacro.execute();
+        if (success) {
+            var c = this.table.getColCount();
+            this.table.setColCount(c - 1);
+        }
+        return success;
+    };
+    CmdDelColumn.prototype.undo = function () {
+        var success = this.cmdMacro.undo();
+        if (success) {
+            var c = this.table.getColCount();
+            this.table.setColCount(c - 1);
+        }
+        return success;
+    };
+    return CmdDelColumn;
+}());
+exports.CmdDelColumn = CmdDelColumn;
+var CmdMoveRow = /** @class */ (function () {
+    function CmdMoveRow(table, rowIdx, offsetRows) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.offsetRows = offsetRows;
+    }
+    CmdMoveRow.prototype.execute = function () {
+        var trs = this.table.getRows();
+        if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
+            log_1.default.error('CmdMoveRow', "Invalid rowIdx: " + this.rowIdx + ", total rows: " + trs.length);
+            return false;
+        }
+        for (var i = this.rowIdx; i < trs.length; i++) {
+            trs[i].moveRows(this.offsetRows);
+        }
+        return true;
+    };
+    CmdMoveRow.prototype.undo = function () {
+        var trs = this.table.getRows();
+        for (var i = this.rowIdx; i < trs.length; i++) {
+            trs[i].moveRows(-this.offsetRows);
+        }
+        return true;
+    };
+    return CmdMoveRow;
+}());
+var CmdMoveCol = /** @class */ (function () {
+    function CmdMoveCol(table, rowIdx, startColIdx, offset) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.startColIdx = startColIdx;
+        this.offset = offset;
+    }
+    CmdMoveCol.prototype.execute = function () {
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        if (!tr) {
+            return false;
+        }
+        this.anchorIdx = tr.moveCols(this.offset, this.startColIdx);
+        return true;
+    };
+    CmdMoveCol.prototype.undo = function () {
+        if (this.anchorIdx >= 0) {
+            var tr = this.table.getRowByIndex(this.rowIdx);
+            tr.moveCols(-this.offset, this.anchorIdx);
+        }
+        return true;
+    };
+    return CmdMoveCol;
+}());
+var CmdExtendRows = /** @class */ (function () {
+    function CmdExtendRows(table, rowIdx, offsetRows) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.offsetRows = offsetRows;
+    }
+    CmdExtendRows.prototype.execute = function () {
+        var trs = this.table.getRows();
+        if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
+            log_1.default.error('CmdExtendRow', "Invalid rowIdx: " + this.rowIdx + ", total rows: " + trs.length);
+            return false;
+        }
+        trs[this.rowIdx].extendRows(this.offsetRows);
+        return true;
+    };
+    CmdExtendRows.prototype.undo = function () {
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        tr.extendRows(-this.offsetRows);
+        return true;
+    };
+    return CmdExtendRows;
+}());
+var CmdExtendCols = /** @class */ (function () {
+    function CmdExtendCols(table, rowIdx, colIdx, offsetCols) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+        this.offsetCols = offsetCols;
+    }
+    CmdExtendCols.prototype.execute = function () {
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        if (!tr) {
+            log_1.default.error('CmdExtendCol', "Invalid rowIdx: " + this.rowIdx);
+            return false;
+        }
+        tr.extendCols(this.colIdx, this.offsetCols);
+        return true;
+    };
+    CmdExtendCols.prototype.undo = function () {
+        var tr = this.table.getRowByIndex(this.rowIdx);
+        tr.extendCols(this.colIdx, -this.offsetCols);
+        return true;
+    };
+    return CmdExtendCols;
+}());
+var CmdMergeCells = /** @class */ (function () {
+    function CmdMergeCells(table, rowRange, colRange) {
+        this.tds = [];
+        this.table = table;
+        this.rowRange = rowRange;
+        this.colRange = colRange;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdMergeCells.prototype.execute = function () {
+        var _this = this;
+        var rowRange = this.rowRange;
+        var colRange = this.colRange;
+        var trs = this.table.getRows();
+        if (rowRange[0] < 0 || rowRange[0] >= trs.length || rowRange[1] < 0 || rowRange[1] >= trs.length || rowRange[0] > rowRange[1]) {
+            log_1.default.error('Table.mergeCells', "Invalid rowRange: " + this.rowRange);
+            return false;
+        }
+        if (colRange[0] < 0 || colRange[0] >= trs.length || colRange[1] < 0 || colRange[1] >= trs.length || colRange[0] > colRange[1]) {
+            log_1.default.error('Table.mergeCells', "Invalid colRange: " + this.colRange);
+            return false;
+        }
+        // 校验左右是否对齐
+        for (var i = rowRange[0]; i <= rowRange[1]; i++) {
+            var tr = trs[i];
+            if (!tr.leftAlign(colRange[0], true) || !tr.rightAlign(colRange[1], true)) {
+                log_1.default.error('Table.mergeCells', "Invalid range. rowRange: " + rowRange + ", colRange: " + colRange);
+                return false;
+            }
+        }
+        // 校验第一行选中的单元格是否连续
+        var tmpTds = trs[rowRange[0]].getTdsInColRange(colRange);
+        for (var i = 0; i < tmpTds.length - 1; i++) {
+            if (tmpTds[i].getColRange()[1] + 1 !== tmpTds[i + 1].getColRange()[0]) {
+                log_1.default.error('Table.mergeCells', "Invalid rowRange: " + rowRange);
+                return false;
+            }
+        }
+        // 检验最后一行的空洞是否不再延续到下面
+        var tmpTr = trs[rowRange[1]];
+        tmpTds = tmpTr.getTdsInColRange(colRange);
+        var holeStartIdx = colRange[0];
+        for (var i = 0; i < tmpTds.length; i++) {
+            var tmpTd = tmpTds[i];
+            var tmpColRange = tmpTd.getColRange();
+            if (holeStartIdx < tmpColRange[0]) {
+                var tdsInHole = this.table.getTdsCrossRow(rowRange[1], holeStartIdx, tmpColRange[0] - 1);
+                if (tdsInHole.length === 0) {
+                    log_1.default.error('CmdMergeCells', "Invalid hole. rowIndex: " + rowRange[1] + ", colRange: [" + colRange[0] + ", " + (tmpColRange[0] - 1) + "]");
+                    return false;
+                }
+                if (!tdsInHole.every(function (td) { return td.getRowRange()[1] === rowRange[1]; })) {
+                    log_1.default.error('CmdMergeCells', "Hole is too large");
+                    return false;
+                }
+            }
+            holeStartIdx = tmpColRange[1] + 1;
+            if (i === tmpTds.length - 1 && holeStartIdx <= colRange[1]) {
+                var tdsInHole = this.table.getTdsCrossRow(rowRange[1], colRange[0], colRange[1]);
+                if (tdsInHole.length === 0) {
+                    log_1.default.error('CmdMergeCells', "Invalid hole. rowIndex: " + rowRange[1] + ", colRange: [" + colRange[0] + ", " + (tmpColRange[0] - 1) + "]");
+                    return false;
+                }
+                if (!tdsInHole.every(function (td) { return td.getRowRange()[1] === rowRange[1]; })) {
+                    log_1.default.error('CmdMergeCells', "Hole is too large");
+                    return false;
+                }
+            }
+        }
+        // 取出所选区域的单元格
+        var content = '';
+        for (var i = rowRange[0]; i <= rowRange[1]; i++) {
+            var tr = this.table.getRowByIndex(i);
+            var tds = tr.getTdsInColRange(colRange);
+            this.tds = this.tds.concat(tds);
+            content += tds.reduce(function (r, td) {
+                _this.cmdMacro.addCommand(new CmdDelCell(_this.table, td.getRowRange()[0], td.getColRange()[0]));
+                return r + td.getContent();
+            }, '');
+        }
+        var tdMerged = new table_1.Td(rowRange, colRange, content);
+        this.cmdMacro.addCommand(new CmdAddCell(this.table, tdMerged), new CmdRemoveBlankRows(this.table));
+        return this.cmdMacro.execute();
+    };
+    CmdMergeCells.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdMergeCells;
+}());
+exports.CmdMergeCells = CmdMergeCells;
+var CmdSplitCell = /** @class */ (function () {
+    function CmdSplitCell(table, rowIdx, colIdx, rowCount, colCount) {
+        this.table = table;
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+        this.rowCount = rowCount;
+        this.colCount = colCount;
+        this.cmdMacro = new CommandMacro();
+    }
+    CmdSplitCell.prototype.execute = function () {
+        var trs = this.table.getRows();
+        if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
+            log_1.default.error('CmdSplitCell', "Invalid rowIdx: " + this.rowIdx);
+            return false;
+        }
+        var td = this.table.getCell(this.rowIdx, this.colIdx);
+        if (!td) {
+            log_1.default.error('CmdSplitCell', "Cell not found. rowIdx: " + this.rowIdx + ", colIdx: " + this.colIdx);
+            return false;
+        }
+        var rowRange = td.getRowRange();
+        var originStartRowIdx = rowRange[0];
+        var originEndRowIdx = rowRange[1];
+        var originRowCount = originEndRowIdx - originStartRowIdx + 1;
+        var colRange = td.getColRange();
+        var originStartColIdx = colRange[0];
+        var originEndColIdx = colRange[1];
+        var originColCount = originEndColIdx - originStartColIdx + 1;
+        // 拆分必须是整数倍
+        if (this.rowCount % originRowCount !== 0 && originRowCount % this.rowCount !== 0) {
+            log_1.default.error(originRowCount + " rows cannot be split into " + this.rowCount + " rows");
+            return false;
+        }
+        if (this.colCount % originColCount !== 0 && originColCount % this.rowCount !== 0) {
+            log_1.default.error(originColCount + " columns cannot be split into " + this.colCount + " columns");
+            return false;
+        }
+        // *** 分割行 ***
+        var endRowIdxAfterSplit = originEndRowIdx;
+        var rowStep;
+        if (this.rowCount > originRowCount) {
+            /* 如果分割的行比最小单位的行数多 */
+            var cPerRow = this.rowCount / originRowCount;
+            endRowIdxAfterSplit = originStartRowIdx + this.rowCount - 1;
+            rowStep = 1;
+            var blankRowsInc = cPerRow - 1;
+            // 把被拆分的单元格下面的行都向下移动
+            if (originEndRowIdx !== trs.length - 1) {
+                this.cmdMacro.addCommand(new CmdMoveRow(this.table, originEndRowIdx + 1, this.rowCount - originRowCount));
+            }
+            for (var i = originStartRowIdx; i < originEndRowIdx + 1; i++) {
+                var tmpIdx = i + (cPerRow - 1) * (i - originStartRowIdx);
+                // 把被拆分单元格所在的所有行向下扩展
+                var tmpC = blankRowsInc;
+                while (tmpC-- > 0) {
+                    this.cmdMacro.addCommand(new CmdAddBlankRow(this.table, tmpIdx + 1));
+                }
+                this.cmdMacro.addCommand(new CmdExtendRows(this.table, tmpIdx, blankRowsInc));
+            }
+        }
+        else {
+            rowStep = originRowCount / this.rowCount;
+        }
+        // 缩小被拆分单元格所占的行数
+        this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, originStartRowIdx, originStartColIdx, [originStartRowIdx, originStartRowIdx + rowStep - 1]));
+        // 插入单元格到被拆分的单元格中
+        for (var i = originStartRowIdx + rowStep; i < endRowIdxAfterSplit + 1; i += rowStep) {
+            var tmpTd = new table_1.Td([i, i + rowStep - 1], [originStartColIdx, originEndColIdx]);
+            this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
+        }
+        // 修改行后的末行索引
+        var finalEndRowIdx = trs.length + endRowIdxAfterSplit - originEndRowIdx;
+        // *** 分割列 ***
+        var endColIdxAfterSplit = originEndColIdx;
+        var colStep;
+        if (this.colCount > originColCount) {
+            /* 如果分割的列比最小单位的列数多 */
+            // originStartColIdx = 0 originEndColIdx = 1 cPerCol = 2
+            var cPerCol = this.colCount / originColCount;
+            colStep = 1;
+            endColIdxAfterSplit = originStartColIdx + originColCount - 1;
+            var blankColsInc = cPerCol - 1;
+            // 每行在被拆分单元格（包含）及后面的单元格进行扩展
+            for (var i = originStartColIdx; i < originEndColIdx + 1; i++) {
+                for (var j = 0; j < finalEndRowIdx; j++) {
+                    this.cmdMacro.addCommand(new CmdExtendCols(this.table, j, i + (i - originStartColIdx) * cPerCol, blankColsInc));
+                }
+                var tmpC = blankColsInc;
+                while (tmpC-- > 0) {
+                    this.cmdMacro.addCommand(new CmdAddColHeader(this.table, i + (i - originStartColIdx) * cPerCol));
+                }
+            }
+        }
+        else {
+            colStep = originColCount / this.colCount;
+        }
+        for (var i = originStartRowIdx; i < endRowIdxAfterSplit + 1; i += rowStep) {
+            // 缩小被拆分的单元格
+            this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
+            // 插入新增的单元格
+            for (var j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
+                var tmpTd = new table_1.Td([i, i + rowStep - 1], [j, j + colStep - 1]);
+                this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
+            }
+        }
+        this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table));
+        return this.cmdMacro.execute();
+    };
+    CmdSplitCell.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdSplitCell;
+}());
+exports.CmdSplitCell = CmdSplitCell;
+var CmdSetCellContent = /** @class */ (function () {
+    function CmdSetCellContent(table, row, col, content) {
+        this.table = table;
+        this.row = row;
+        this.col = col;
+        this.content = content;
+    }
+    CmdSetCellContent.prototype.execute = function () {
+        this.prevContent = this.table.getCellContent(this.row, this.col);
+        if (this.prevContent === null) {
+            return false;
+        }
+        return this.table.setCellContent(this.row, this.col, this.content);
+    };
+    CmdSetCellContent.prototype.undo = function () {
+        var content = this.table.getCellContent(this.row, this.col);
+        if (content === null) {
+            return false;
+        }
+        if (content !== this.content) {
+            // warn
+        }
+        return this.table.setCellContent(this.row, this.col, this.prevContent);
+    };
+    return CmdSetCellContent;
+}());
+exports.CmdSetCellContent = CmdSetCellContent;
+
+
+/***/ }),
+
+/***/ "./src/dom.ts":
+/*!********************!*\
+  !*** ./src/dom.ts ***!
+  \********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function insertNode(parent, child, idx) {
+    if (idx < 0 || idx > parent.childNodes.length) {
+        return false;
+    }
+    if (idx === parent.childNodes.length) {
+        parent.appendChild(child);
+    }
+    else {
+        parent.insertBefore(child, parent.childNodes[idx]);
+    }
+    return true;
+}
+exports.insertNode = insertNode;
+function getEventPath(e) {
+    if ('path' in e) {
+        return e.path;
+    }
+    var path = [e.target];
+    var elem = e.target.parentElement;
+    while (elem.parentElement !== null) {
+        path.push(elem.parentElement);
+        elem = elem.parentElement;
+    }
+    path.push(document, window);
+    return path;
+}
+exports.getEventPath = getEventPath;
+
+
+/***/ }),
+
+/***/ "./src/editor.ts":
+/*!***********************!*\
+  !*** ./src/editor.ts ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
+var command_1 = __webpack_require__(/*! ./command */ "./src/command.ts");
+__webpack_require__(/*! ../style/editor.scss */ "./style/editor.scss");
+var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
+var TableEditor = /** @class */ (function () {
+    function TableEditor(options) {
+        this.elem = options.elem;
+        this.elem.innerHTML = '';
+        var className = "table-editor-" + TableEditor.version.replace(/\./g, '-');
+        this.table = new table_1.Table(className, options.data, options['colWidth'] || [], this.debug);
+        this.elem.appendChild(this.table.elem);
+        this.cmdHistory = new CommandHistory(10);
+        this.debug = 'debug' in options ? !!options.debug : false;
+    }
+    TableEditor.prototype.addRow = function (rowIdx, above) {
+        if (this.debug) {
+            log_1.log.info("Add one row " + (above ? 'above' : 'below') + " row: " + (rowIdx + 1));
+        }
+        var cmd = new command_1.CmdAddRow(this.table, rowIdx, above);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.delRow = function (rowIdx) {
+        if (this.debug) {
+            log_1.log.info("Delete row " + (rowIdx + 1));
+        }
+        var cmd = new command_1.CmdDelRow(this.table, rowIdx);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.addColumn = function (colIdx, left) {
+        if (this.debug) {
+            log_1.log.info("Add one column " + (left ? 'left' : 'right') + " of column " + (colIdx + 1));
+        }
+        var cmd = new command_1.CmdAddColumn(this.table, colIdx, left);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.delColumn = function (colIdx) {
+        if (this.debug) {
+            log_1.log.info("Delete column " + (colIdx + 1));
+        }
+        var cmd = new command_1.CmdDelColumn(this.table, colIdx);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.mergeCells = function (rowRange, colRange) {
+        if (this.debug) {
+            log_1.log.info("Merge cells. Row: " + (rowRange[0] + 1) + " ~ " + (rowRange[1] + 1) + ", Column: " + (colRange[0] + 1) + " ~ " + (colRange[1] + 1));
+        }
+        var cmd = new command_1.CmdMergeCells(this.table, rowRange, colRange);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.splitCell = function (rowIdx, colIdx, rowCount, colCount) {
+        if (this.debug) {
+            log_1.log.info("Split cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") into " + rowCount + " rows and " + colCount + " columns");
+        }
+        var cmd = new command_1.CmdSplitCell(this.table, rowIdx, colIdx, rowCount, colCount);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.getCellContent = function (rowIdx, colIdx) {
+        return this.table.getCellContent(rowIdx, colIdx);
+    };
+    TableEditor.prototype.setCellContent = function (rowIdx, colIdx, content) {
+        if (this.debug) {
+            log_1.log.info("Set cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") \"" + content + "\"");
+        }
+        var cmd = new command_1.CmdSetCellContent(this.table, rowIdx, colIdx, content);
+        if (cmd.execute()) {
+            this.cmdHistory.push(cmd);
+        }
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.undo = function () {
+        if (this.debug) {
+            log_1.log.info('Undo');
+        }
+        this.cmdHistory.undo();
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.redo = function () {
+        if (this.debug) {
+            log_1.log.info('Redo');
+        }
+        this.cmdHistory.redo();
+        if (this.debug) {
+            this.printDebugInfo();
+        }
+    };
+    TableEditor.prototype.getTableData = function () {
+        return this.table.getTableData();
+    };
+    TableEditor.prototype.printDebugInfo = function () {
+        var errorMsg = this.table.validate();
+        if (errorMsg) {
+            log_1.log.error("\uD83D\uDCA9 " + errorMsg);
+        }
+        this.cmdHistory.printStatus();
+    };
+    TableEditor.prototype.destroy = function () {
+        this.table.destroy();
+    };
+    TableEditor.version = '0.0.1';
+    return TableEditor;
+}());
+exports.TableEditor = TableEditor;
+var CommandHistory = /** @class */ (function () {
+    function CommandHistory(max) {
+        this.divide = 0;
+        this.top = 0;
+        this.cap = max;
+        this.commands = [];
+    }
+    CommandHistory.prototype.push = function (cmd) {
+        if (this.divide < this.top) {
+            for (var i = this.divide; i <= this.top - 1; i++) {
+                this.commands[i] = null;
+            }
+            this.top = this.divide;
+        }
+        if (this.top === this.cap) {
+            this.commands.shift();
+            this.commands.push(cmd);
+        }
+        else {
+            this.commands[this.top] = cmd;
+            this.divide = ++this.top;
+        }
+    };
+    CommandHistory.prototype.undo = function () {
+        if (this.divide > 0 && !this.commands[--this.divide].undo()) {
+            this.clear();
+        }
+    };
+    CommandHistory.prototype.redo = function () {
+        if (this.divide < this.top && !this.commands[this.divide++].execute()) {
+            this.clear();
+        }
+    };
+    CommandHistory.prototype.clear = function () {
+        this.commands.length = 0;
+        this.divide = this.top = 0;
+    };
+    CommandHistory.prototype.printStatus = function () {
+        log_1.log.info("\uD83D\uDC7D Command History: Capability: " + this.cap + "  Undo: " + this.divide + "  Redo: " + (this.top - this.divide), this.commands);
+    };
+    return CommandHistory;
+}());
+
+
+/***/ }),
+
+/***/ "./src/log.ts":
+/*!********************!*\
+  !*** ./src/log.ts ***!
+  \********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var PREFIX = '👻';
+exports.log = {
+    info: function () {
+        var messages = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            messages[_i] = arguments[_i];
+        }
+        (console.info || console.log).apply(void 0, __spreadArrays([PREFIX], messages));
+    },
+    warn: function () {
+        var messages = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            messages[_i] = arguments[_i];
+        }
+        (console.warn || console.log).apply(void 0, __spreadArrays([PREFIX], messages));
+    },
+    error: function () {
+        var messages = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            messages[_i] = arguments[_i];
+        }
+        (console.error || console.log).apply(void 0, __spreadArrays([PREFIX], messages));
+    }
+};
+exports.default = exports.log;
+
+
+/***/ }),
+
+/***/ "./src/table.ts":
+/*!**********************!*\
+  !*** ./src/table.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
+var dom_1 = __webpack_require__(/*! ./dom */ "./src/dom.ts");
+function tdRangeToString(range) {
+    if (range.length === 0) {
+        return '';
+    }
+    if (typeof range[0] === 'number') {
+        return "[" + range[0] + ", " + range[1] + "]";
+    }
+    var tmpArr = range.map(function (r) {
+        return "[" + r[0] + ", " + r[1] + "]";
+    });
+    return "[" + tmpArr.join(', ') + "]";
+}
+exports.tdRangeToString = tdRangeToString;
+var Td = /** @class */ (function () {
+    function Td(rowRange, colRange, content, props) {
+        var _this = this;
+        this.content = content || '';
+        this.elem = document.createElement('td');
+        var div = document.createElement('div');
+        div.className = 'cell-content';
+        div.contentEditable = 'true';
+        div.innerText = this.content;
+        this.elem.appendChild(div);
+        this.elem['td'] = this;
+        this.setRowRange(rowRange);
+        this.setColRange(colRange);
+        this.props = props || {};
+        if (this.props.style) {
+            Object.keys(this.props.style).forEach(function (k) {
+                _this.elem.style[k] = _this.props.style[k];
+            });
+        }
+    }
+    Td.prototype.getRowRange = function () {
+        return this.rowRange;
+    };
+    Td.prototype.getColRange = function () {
+        return this.colRange;
+    };
+    Td.prototype.getContent = function () {
+        return this.content;
+    };
+    Td.prototype.getElem = function () {
+        return this.elem;
+    };
+    Td.prototype.setRowRange = function (range) {
+        this.rowRange = range;
+        if (range[1] === range[0]) {
+            this.elem.removeAttribute('rowspan');
+        }
+        else {
+            this.elem.rowSpan = range[1] - range[0] + 1;
+        }
+    };
+    Td.prototype.setColRange = function (range) {
+        this.colRange = range;
+        if (range[1] === range[0]) {
+            this.elem.removeAttribute('colspan');
+        }
+        else {
+            this.elem.colSpan = range[1] - range[0] + 1;
+        }
+    };
+    Td.prototype.setContent = function (content, updateElement) {
+        if (updateElement === void 0) { updateElement = true; }
+        this.content = content;
+        if (updateElement) {
+            this.elem.innerText = content;
+        }
+    };
+    Td.prototype.remove = function () {
+        this.elem.remove();
+    };
+    return Td;
+}());
+exports.Td = Td;
+var Tr = /** @class */ (function () {
+    function Tr(tds) {
+        var _this = this;
+        this.tds = tds || [];
+        this.elem = document.createElement('tr');
+        this.tds.forEach(function (td) {
+            _this.elem.appendChild(td.getElem());
+        });
+    }
+    Tr.prototype.getElem = function () {
+        return this.elem;
+    };
+    Tr.prototype.getTds = function () {
+        return this.tds;
+    };
+    Tr.prototype.addTd = function (td) {
+        var colRange = td.getColRange();
+        if (this.tds.length === 0 || this.tds[this.tds.length - 1].getColRange()[1] < colRange[0]) {
+            // 空行或者需要插入到最后
+            this.elem.appendChild(td.getElem());
+            this.tds.push(td);
+            return 1;
+        }
+        else if (this.tds[0].getColRange()[0] > colRange[1]) {
+            // 插入到开头
+            dom_1.insertNode(this.elem, td.getElem(), 0);
+            this.tds.unshift(td);
+            return 1;
+        }
+        else {
+            // 插入到中间
+            for (var i = 0; i < this.tds.length; i++) {
+                if (i !== this.tds.length - 1) {
+                    var tmpColRange = this.tds[i].getColRange();
+                    var tmpNextColRange = this.tds[i + 1].getColRange();
+                    if (colRange[0] > tmpColRange[1] && colRange[1] < tmpNextColRange[0]) {
+                        // 插入到空洞
+                        dom_1.insertNode(this.elem, td.getElem(), i + 1);
+                        this.tds.splice(i + 1, 0, td);
+                        return 1;
+                    }
+                }
+            }
+        }
+        var tdsRange = this.tds.map(function (td) {
+            return td.getColRange();
+        });
+        log_1.default.error('Tr.addTd', "Add td fail. tds col range: " + tdRangeToString(tdsRange) + ", tdRange: " + tdRangeToString(colRange));
+        return 0;
+    };
+    Tr.prototype.removeTdByColIdx = function (colIdx) {
+        for (var i = 0; i < this.tds.length; i++) {
+            var td = this.tds[i];
+            var colRange = td.getColRange();
+            if (colRange[0] === colIdx) {
+                this.elem.removeChild(td.getElem());
+                this.tds.splice(i, 1);
+                return 1;
+            }
+        }
+        return 0;
+    };
+    Tr.prototype.getTdByColIndex = function (colIdx) {
+        for (var i = 0; i < this.tds.length; i++) {
+            if (this.tds[i].getColRange()[0] === colIdx) {
+                return this.tds[i];
+            }
+        }
+        return null;
+    };
+    Tr.prototype.getTdsInColRange = function (range) {
+        var start = -1;
+        var end = -1;
+        for (var i = 0; i < this.tds.length; i++) {
+            var colRange = this.tds[i].getColRange();
+            if (start === -1 && colRange[0] >= range[0]) {
+                start = i;
+            }
+            if (colRange[1] <= range[1]) {
+                end = i;
+            }
+        }
+        return start >= 0 && end >= 0 ? this.tds.slice(start, end + 1) : [];
+    };
+    Tr.prototype.indexOf = function (td) {
+        for (var i = 0; i < this.tds.length; i++) {
+            if (td === this.tds[i]) {
+                return i;
+            }
+        }
+        return -1;
+    };
+    Tr.prototype.leftAlign = function (colIdx, strict) {
+        if (strict === void 0) { strict = false; }
+        if (colIdx === 0) {
+            return true;
+        }
+        var holeStart = 0;
+        for (var i = 0; i < this.tds.length; i++) {
+            var colRange = this.tds[i].getColRange();
+            if (colRange[0] === colIdx) {
+                return true;
+            }
+            // 如果非严格模式并且在空洞里
+            if (!strict && colIdx >= holeStart && colIdx < colRange[0]) {
+                return true;
+            }
+            holeStart = colRange[1] + 1;
+        }
+        // 非严格模式落在最后一个空洞里
+        return !strict && colIdx >= holeStart && colIdx < this.colCount - 1;
+    };
+    Tr.prototype.rightAlign = function (colIdx, strict) {
+        if (strict === void 0) { strict = false; }
+        if (colIdx === this.colCount - 1) {
+            return true;
+        }
+        var holeStart = 0;
+        for (var i = 0; i < this.tds.length; i++) {
+            var colRange = this.tds[i].getColRange();
+            if (colIdx === colRange[1]) {
+                return true;
+            }
+            if (!strict && colIdx >= holeStart && colIdx < colRange[0]) {
+                return true;
+            }
+            holeStart = colRange[1] + 1;
+        }
+        return !strict && colIdx >= holeStart && colIdx < this.colCount - 1;
+    };
+    Tr.prototype.moveRows = function (offset) {
+        if (offset === void 0) { offset = 1; }
+        this.tds.forEach(function (td) {
+            var rowRange = td.getRowRange();
+            td.setRowRange([rowRange[0] + offset, rowRange[1] + offset]);
+        });
+    };
+    Tr.prototype.moveCols = function (offset, startColIdx) {
+        var anchorIdx = -1;
+        this.tds.forEach(function (td) {
+            var colRange = td.getColRange();
+            if (colRange[0] >= startColIdx) {
+                td.setColRange([colRange[0] + offset, colRange[1] + offset]);
+                if (anchorIdx < 0) {
+                    anchorIdx = colRange[0] + offset;
+                }
+            }
+        });
+        return anchorIdx;
+    };
+    Tr.prototype.extendRows = function (rows) {
+        this.tds.forEach(function (td) {
+            var rowRange = td.getRowRange();
+            td.setRowRange([rowRange[0], rowRange[1] + rows]);
+        });
+    };
+    Tr.prototype.extendCols = function (colIdx, offsetCols) {
+        var targetTd;
+        var targetIdx;
+        // 设置为"空洞"的开始
+        var prevIdx = 0;
+        for (var i = 0; i < this.tds.length; i++) {
+            var td = this.tds[i];
+            var colRange = td.getColRange();
+            if ((colIdx >= colRange[0] && colIdx <= colIdx) || (colIdx >= prevIdx && colIdx < colRange[0])) {
+                targetTd = td;
+                targetIdx = i;
+            }
+            prevIdx = colRange[1] + 1;
+        }
+        if (targetTd) {
+            var colRange = targetTd.getColRange();
+            targetTd.setColRange([colRange[0], colRange[1] + offsetCols]);
+            for (var i = targetIdx + 1; i < this.tds.length; i++) {
+                colRange = this.tds[i].getColRange();
+                this.tds[i].setColRange([colRange[0] + offsetCols, colRange[1] + offsetCols]);
+            }
+        }
+    };
+    Tr.prototype.setColContent = function (n) {
+        this.colCount = n;
+    };
+    return Tr;
+}());
+var MouseMode;
+(function (MouseMode) {
+    MouseMode[MouseMode["NONE"] = 0] = "NONE";
+    MouseMode[MouseMode["RESIZE"] = 1] = "RESIZE";
+    MouseMode[MouseMode["SELECT"] = 2] = "SELECT";
+})(MouseMode || (MouseMode = {}));
+var Table = /** @class */ (function () {
+    function Table(className, data, colWidth, debug) {
+        var _this = this;
+        this.colCount = 0;
+        this.mouseMode = MouseMode.NONE;
+        this.elem = document.createElement('table');
+        this.elem.className = className;
+        this.elem.innerHTML = '<colgroup></colgroup><tbody></tbody>';
+        this.colgroupElem = this.elem.querySelector('colgroup');
+        this.tbodyElem = this.elem.querySelector('tbody');
+        this.trs = [];
+        this.debug = debug;
+        if (!data) {
+            data = [[{
+                        row: [0, 0],
+                        col: [0, 0],
+                        content: '',
+                        style: {}
+                    }]];
+        }
+        try {
+            if (data.length === 0) {
+                return;
+            }
+            if ('row' in data[0]) {
+                // TableCells
+                data.forEach(function (tdData) {
+                    var rowRange = tdData.row;
+                    var colRange = tdData.col;
+                    if (_this.trs.length - 1 < rowRange[1]) {
+                        for (var i_1 = _this.trs.length; i_1 <= rowRange[1]; i_1++) {
+                            var tr_1 = new Tr();
+                            _this.trs.push(tr_1);
+                            _this.tbodyElem.appendChild(tr_1.getElem());
+                        }
+                    }
+                    var tr = _this.trs[rowRange[0]];
+                    tr.addTd(new Td(rowRange, colRange, tdData.content, { style: tdData.style || {} }));
+                    if (_this.colCount < colRange[1]) {
+                        _this.colCount = colRange[1];
+                    }
+                });
+            }
+            else {
+                // TableData
+                this.trs = data.map(function (trData) {
+                    var tds = trData.map(function (td) {
+                        if (_this.colCount < td.col[1]) {
+                            _this.colCount = td.col[1];
+                        }
+                        return new Td(td.row, td.col, td.content, { style: td.style || {} });
+                    });
+                    var tr = new Tr(tds);
+                    _this.tbodyElem.appendChild(tr.getElem());
+                    return tr;
+                });
+            }
+            this.colCount++;
+            var i = 0;
+            while (i < this.colCount) {
+                var colElem = document.createElement('col');
+                colElem.style.width = (typeof colWidth === 'number' ? colWidth : (colWidth[i] || Table.defaultColWidth)) + "px";
+                this.colgroupElem.appendChild(colElem);
+                i++;
+            }
+        }
+        catch (e) {
+            log_1.default.error('Invalid table data.', data, e);
+            return;
+        }
+        this.initEventListener();
+    }
+    Table.prototype.initEventListener = function () {
+        var _this = this;
+        this.elem.addEventListener('input', function (e) {
+            e.stopPropagation();
+            var ep = dom_1.getEventPath(e);
+            var target = e.target;
+            if (_this.eventTargetIsCellContent(e)) {
+                var td = ep[1].td;
+                td.setContent(target['innerText'], false);
+            }
+        });
+        var RESIZE_OFFSET = 5;
+        this.elem.addEventListener('mousedown', function (e) {
+            if (!_this.eventTargetIsCellContent(e)) {
+                return;
+            }
+            _this.mouseDownPos = {
+                pageX: e.pageX,
+                pageY: e.pageY,
+                clientX: e.clientX,
+                clientY: e.clientY
+            };
+            var target = e.target;
+            var td = target['parentNode']['td'];
+            var tmpIdx = td.getColRange()[0] + (target['offsetX'] < RESIZE_OFFSET ? 0 : 1);
+            if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
+                if (e.offsetX < RESIZE_OFFSET) {
+                    tmpIdx--;
+                }
+                // 不能拖拽第一条竖线
+                _this.mouseMode = MouseMode.RESIZE;
+                var colEls = _this.colgroupElem.children;
+                var maxLeftOffset = +colEls[tmpIdx + 1]['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                var colEl = colEls[tmpIdx];
+                colEl['originWidth'] = +colEl.style.width.slice(0, -2);
+                if (tmpIdx === colEls.length) {
+                    // 最后一条竖线
+                    _this.resizeRange = [maxLeftOffset, _this.elem.parentElement.clientWidth - _this.elem.clientWidth];
+                    _this.colElsResizing = [colEl];
+                }
+                else {
+                    var maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                    _this.resizeRange = [maxLeftOffset, maxRightOffset];
+                    var leftColEl = colEls[tmpIdx - 1];
+                    leftColEl['originWidth'] = +leftColEl.style.width.slice(0, -2);
+                    _this.colElsResizing = [leftColEl, colEl];
+                }
+            }
+            else {
+                _this.mouseMode = MouseMode.SELECT;
+                _this.tdSelectStart = { r: td.getRowRange()[0], c: td.getColRange()[0] };
+            }
+        });
+        this.elem.addEventListener('mouseup', function (e) {
+            _this.elem.style.cursor = 'text';
+            _this.mouseMode = MouseMode.NONE;
+        });
+        this.elem.addEventListener('mousemove', function (e) {
+            var target = e.target;
+            var ep = dom_1.getEventPath(e);
+            if (_this.mouseMode === MouseMode.NONE) {
+                if (_this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > e.target['clientWidth'] - RESIZE_OFFSET)) {
+                    _this.elem.style.cursor = 'col-resize';
+                }
+                else {
+                    _this.elem.style.cursor = 'text';
+                }
+            }
+            else if (_this.mouseMode === MouseMode.RESIZE) {
+                _this.elem.style.cursor = 'col-resize';
+                var startPageX = _this.mouseDownPos.pageX;
+                var leftOffset = e.pageX < startPageX
+                    ? Math.min(startPageX - e.pageX, _this.resizeRange[0])
+                    : -Math.min(e.pageX - startPageX, _this.resizeRange[1]);
+                var leftColEl = _this.colElsResizing[0];
+                leftColEl.style.width = leftColEl['originWidth'] - leftOffset + "px";
+                if (_this.colElsResizing.length > 1) {
+                    var rightColEl = _this.colElsResizing[1];
+                    rightColEl.style.width = rightColEl['originWidth'] + leftOffset + "px";
+                }
+            }
+            else if (_this.mouseMode === MouseMode.SELECT) {
+                //
+            }
+        });
+        this.elem.addEventListener('mouseout', function (e) {
+            _this.elem.style.cursor = 'default';
+        });
+    };
+    Table.prototype.eventTargetIsCellContent = function (e) {
+        var ep = dom_1.getEventPath(e);
+        return e.target instanceof HTMLElement && e.target.classList.contains('cell-content') && ep[4] === this.elem;
+    };
+    Table.prototype.columnOffsetLeft = function (idx) {
+        var cols = this.colgroupElem.children;
+        var offset = 0;
+        if (idx < 0) {
+            return offset;
+        }
+        for (var i = 0; i < cols.length; i++) {
+            if (i === idx) {
+                break;
+            }
+            offset += +cols[i]['style'].width.slice(0, -2);
+        }
+        return offset;
+    };
+    Table.prototype.addRow = function (rowIdx) {
+        if (rowIdx < 0 || rowIdx > this.trs.length) {
+            log_1.default.error('Table.addRow', "Invalid rowIdx: " + rowIdx);
+            return 0;
+        }
+        var tr = new Tr();
+        dom_1.insertNode(this.tbodyElem, tr.getElem(), rowIdx);
+        this.trs.splice(rowIdx, 0, tr);
+        return 1;
+    };
+    Table.prototype.delRow = function (rowIdx) {
+        if (rowIdx < 0 || rowIdx >= this.trs.length) {
+            log_1.default.error('Table.delRow', "Invalid rowIdx: " + rowIdx);
+            return 0;
+        }
+        var tr = this.trs[rowIdx];
+        this.tbodyElem.removeChild(tr.getElem());
+        this.trs.splice(rowIdx, 1);
+        return 1;
+    };
+    Table.prototype.addColHeader = function (colIdx) {
+        var cols = this.colgroupElem.children;
+        if (colIdx < 0 || colIdx >= cols.length) {
+            log_1.default.error('Table.addCol', "Invalid colIdx: " + colIdx);
+            return 0;
+        }
+        var colElem = document.createElement('col');
+        colElem.style.width = Table.defaultColWidth + "px";
+        dom_1.insertNode(this.colgroupElem, colElem, colIdx);
+        return 1;
+    };
+    Table.prototype.delColHeader = function (colIdx) {
+        var colElem = this.colgroupElem.children[colIdx];
+        if (!colElem) {
+            return 0;
+        }
+        this.colgroupElem.removeChild(colElem);
+        return 1;
+    };
+    Table.prototype.getRows = function () {
+        return this.trs;
+    };
+    Table.prototype.getRowCount = function () {
+        return this.trs.length;
+    };
+    Table.prototype.getColCount = function () {
+        return this.colCount;
+    };
+    Table.prototype.setColCount = function (n) {
+        this.colCount = n;
+        this.trs.forEach(function (tr) {
+            tr.setColContent(n);
+        });
+    };
+    Table.prototype.getRowByIndex = function (idx) {
+        if (idx < 0 || idx >= this.trs.length) {
+            return null;
+        }
+        return this.trs[idx];
+    };
+    // 获取空洞位置的单元格
+    Table.prototype.getTdsCrossRow = function (fromRowIdx, colStartIdx, colEndIdx) {
+        var ret = [];
+        if (fromRowIdx < 0 || fromRowIdx >= this.trs.length) {
+            log_1.default.error('Table.getTdsCrossRow', "Invalid param fromRowIdx: " + fromRowIdx);
+            return ret;
+        }
+        var c = 1;
+        for (var i = fromRowIdx; i >= 0; i--) {
+            var td = this.trs[i].getTdByColIndex(colStartIdx);
+            if (td) {
+                ret.push(td);
+                var colRange = td.getColRange();
+                if (colRange[1] < colEndIdx) {
+                    colStartIdx = colRange[1] + 1;
+                    i = fromRowIdx;
+                    c++;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        if (c !== ret.length) {
+            log_1.default.error('Table.getTdsCrossRow', "Table data error");
+        }
+        return ret;
+    };
+    Table.prototype.removeCell = function (rowIdx, colIdx) {
+        if (rowIdx < 0 || rowIdx >= this.trs.length) {
+            log_1.default.error('Table.removeCell', "Invalid param rowIdx: " + rowIdx);
+            return 0;
+        }
+        var tr = this.trs[rowIdx];
+        return tr.removeTdByColIdx(colIdx);
+    };
+    Table.prototype.getCell = function (rowIdx, colIdx) {
+        if (rowIdx < 0 || rowIdx >= this.trs.length) {
+            log_1.default.error('Table.getCell', "Invalid param rowIdx: " + rowIdx);
+            return null;
+        }
+        var tr = this.trs[rowIdx];
+        return tr.getTdByColIndex(colIdx);
+    };
+    Table.prototype.getCellContent = function (rowIdx, colIdx) {
+        var td = this.getCell(rowIdx, colIdx);
+        if (!td) {
+            return null;
+        }
+        return td.getContent();
+    };
+    Table.prototype.setCellContent = function (rowIdx, colIdx, content) {
+        var td = this.getCell(rowIdx, colIdx);
+        if (!td) {
+            return false;
+        }
+        td.setContent(content);
+        return true;
+    };
+    Table.prototype.validate = function () {
+        if (this.trs.length !== this.tbodyElem.children.length) {
+            return 'Row number not match';
+        }
+        for (var i = 0; i < this.trs.length; i++) {
+            var tds = this.trs[i].getTds();
+            var tdElems = this.tbodyElem.children[i].children;
+            if (tds.length !== tdElems.length) {
+                return "The td amount of " + (i + 1) + "th row not match";
+            }
+            for (var j = 0; j < tds.length; j++) {
+                var td = tds[j];
+                var tdElem = tdElems[j];
+                var rowRange = td.getRowRange();
+                var colRange = td.getColRange();
+                if (rowRange[0] !== i) {
+                    return "Row range not match. rowIndex: " + i;
+                }
+                var colspan = tdElem.hasAttribute('colspan') ? +tdElem.getAttribute('colspan') : 1;
+                if (colspan !== colRange[1] - colRange[0] + 1) {
+                    return "Colspan not match. rowIndex: " + i + ", colIndex: " + j;
+                }
+                var rowspan = tdElem.hasAttribute('rowspan') ? +tdElem.getAttribute('rowspan') : 1;
+                if (rowspan !== rowRange[1] - rowRange[0] + 1) {
+                    return "Rowspan not match. rowIndex: " + i + ", colIndex: " + j;
+                }
+                if (td.getContent() !== tdElem.firstChild['innerText']) {
+                    return "Td content not match. rowIndex: " + i + ", colIndex: " + j;
+                }
+            }
+        }
+        return '';
+    };
+    Table.prototype.getTableData = function () {
+        var rows = this.trs.map(function (tr) {
+            return tr.getTds().map(function (td) {
+                var rowRange = td.getRowRange();
+                var colRange = td.getColRange();
+                return {
+                    row: [rowRange[0], rowRange[1]],
+                    col: [colRange[0], colRange[1]],
+                    content: td.getContent(),
+                    width: td.getElem().clientWidth,
+                    height: td.getElem().clientHeight
+                };
+            });
+        });
+        var colEls = this.colgroupElem.children;
+        var colWidth = [];
+        for (var i = 0; i < colEls.length; i++) {
+            colWidth.push(+colEls[i]['style'].width.slice(0, -2));
+        }
+        return {
+            rows: rows,
+            colWidth: colWidth
+        };
+    };
+    Table.prototype.destroy = function () {
+        this.elem.remove();
+    };
+    Table.defaultColWidth = 50;
+    return Table;
+}());
+exports.Table = Table;
+
+
+/***/ }),
+
+/***/ "./style/editor.scss":
+/*!***************************!*\
+  !*** ./style/editor.scss ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var content = __webpack_require__(/*! !../node_modules/css-loader/dist/cjs.js!../node_modules/sass-loader/dist/cjs.js!./editor.scss */ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./style/editor.scss");
+
+if (typeof content === 'string') {
+  content = [[module.i, content, '']];
+}
+
+var options = {}
+
+options.insert = "head";
+options.singleton = false;
+
+var update = __webpack_require__(/*! ../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js")(content, options);
+
+if (content.locals) {
+  module.exports = content.locals;
+}
+
+
+/***/ })
+
+/******/ });
+});
