@@ -1,5 +1,5 @@
 {
-  "name": "table-editor",
+  "name": "web-table-editor",
   "version": "0.0.1",
   "description": "edit table structure and content",
   "main": "index.js",
