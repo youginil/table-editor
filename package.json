@@ -4,8 +4,8 @@
   "description": "edit table structure and content",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/webpack --env.production",
-    "dev": "./node_modules/.bin/webpack-dev-server --inline --env.production=false"
+    "build": "./node_modules/.bin/webpack",
+    "dev": "./node_modules/.bin/webpack-dev-server --inline"
   },
   "repository": {
     "type": "git",
