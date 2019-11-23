@@ -36,7 +36,6 @@ export class CommandMacro implements Command {
         for (let i = 0; i < this.commands.length; i++) {
             if (!this.commands[i].execute()) {
                 log.error(`CommandMacro fail on ${i}th command.`, this.commands);
-                debugger;
                 while (--i >= 0) {
                     this.commands[i].undo();
                 }

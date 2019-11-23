@@ -1,13 +1,14 @@
 import log from './log';
 import {insertNode, getEventPath} from "./dom";
-import get = Reflect.get;
+import {CellBlurEvent, CellFocusEvent} from "./event";
 
 type TdRange = [number, number];
 type TdData = {
-    row: TdRange;
-    col: TdRange;
-    content: string;
+    row: TdRange
+    col: TdRange
+    content: string
     style?: object
+    width?: number
 }
 type TrData = Array<TdData>
 type TableData = Array<TrData>
@@ -36,16 +37,18 @@ class Td {
     private colRange: TdRange;
     private content: string;
     private readonly elem: HTMLTableCellElement;
+    private readonly ccElem: HTMLDivElement;
     private props: Props;
+    private editable: boolean;
 
     constructor(rowRange: TdRange, colRange: TdRange, content?: string, props?: Props) {
         this.content = content || '';
         this.elem = document.createElement('td');
-        const div = document.createElement('div');
-        div.className = 'cell-content';
-        div.contentEditable = 'true';
-        div.innerText = this.content;
-        this.elem.appendChild(div);
+        // cc is short for "content cell"
+        this.ccElem = document.createElement('div');
+        this.ccElem.className = 'cell-content';
+        this.ccElem.innerText = this.content;
+        this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
         this.setRowRange(rowRange);
         this.setColRange(colRange);
@@ -98,8 +101,16 @@ class Td {
         }
     }
 
-    remove() {
-        this.elem.remove();
+    setEditable(editable: boolean) {
+        if (this.editable === editable) {
+            return;
+        }
+        this.editable = editable;
+        if (this.editable) {
+            this.ccElem.contentEditable = 'true';
+        } else {
+            this.ccElem.removeAttribute('contenteditable');
+        }
     }
 }
 
@@ -113,7 +124,7 @@ class Tr {
         this.elem = document.createElement('tr');
         this.tds.forEach((td) => {
             this.elem.appendChild(td.getElem());
-        })
+        });
     }
 
     getElem() {
@@ -306,6 +317,17 @@ enum MouseMode {
     SELECT
 }
 
+type tableOptions = {
+    className: string
+    data: TableData | TableCells
+    colWidth: number | Array<number>
+    editable: boolean
+    cellFocusedBg: string
+    debug: boolean
+    onCellFocus: (CellFocusEvent) => void
+    onCellBlur: (CellBlurEvent) => void
+};
+
 class Table {
     static defaultColWidth: number = 50;
 
@@ -314,27 +336,34 @@ class Table {
     private readonly tbodyElem: HTMLElement;
     private readonly trs: Array<Tr>;
     private colCount: number = 0;
+    private readonly cellFocusedBg: string;
+    private editable: boolean;
+    private debug: boolean;
+    private readonly onCellFocus: (CellFocusEvent) => void;
+    private readonly onCellBlur: (CellBlurEvent) => void;
 
     private mouseMode: MouseMode = MouseMode.NONE;
-    private mouseDownPos: {pageX: number, pageY: number, clientX: number, clientY: number};
+    private mouseDownPos: { pageX: number, pageY: number, clientX: number, clientY: number };
     // 拖动的竖线的状态变量
     private colElsResizing: Array<HTMLElement>;
     private resizeRange: [number, number];
     // 开始拖拽的单元格
-    private tdSelectStart: {r: number, c: number};
+    private tdSelectStart: { r: number, c: number };
 
-    private debug: boolean;
-
-    constructor(className: string, data: TableData | TableCells, colWidth: number | Array<number>, debug: boolean) {
+    constructor(options: tableOptions) {
         this.elem = document.createElement('table');
-        this.elem.className = className;
+        this.elem.className = options.className;
         this.elem.innerHTML = '<colgroup></colgroup><tbody></tbody>';
         this.colgroupElem = this.elem.querySelector('colgroup');
         this.tbodyElem = this.elem.querySelector('tbody');
         this.trs = [];
-        this.debug = debug;
-        if (!data) {
-            (<TableData>data) = [[{
+        this.editable = options.editable;
+        this.cellFocusedBg = options.cellFocusedBg;
+        this.debug = options.debug;
+        this.onCellFocus = options.onCellFocus;
+        this.onCellBlur = options.onCellBlur;
+        if (!options.data) {
+            (<TableData>options.data) = [[{
                 row: [0, 0],
                 col: [0, 0],
                 content: '',
@@ -342,9 +371,11 @@ class Table {
             }]];
         }
         try {
+            const data = options.data;
             if (data.length === 0) {
                 return;
             }
+            const cwc = new ColWidthCalculator();
             if ('row' in data[0]) {
                 // TableCells
                 (<TableCells>data).forEach((tdData) => {
@@ -359,6 +390,9 @@ class Table {
                     }
                     const tr = this.trs[rowRange[0]];
                     tr.addTd(new Td(rowRange, colRange, tdData.content, {style: tdData.style || {}}));
+                    if ('width' in tdData) {
+                        cwc.add(colRange, tdData.width);
+                    }
                     if (this.colCount < colRange[1]) {
                         this.colCount = colRange[1];
                     }
@@ -369,6 +403,9 @@ class Table {
                     const tds = trData.map((td) => {
                         if (this.colCount < td.col[1]) {
                             this.colCount = td.col[1];
+                        }
+                        if ('width' in td) {
+                            cwc.add(td.col, td.width);
                         }
                         return new Td(td.row, td.col, td.content, {style: td.style || {}});
                     });
@@ -381,12 +418,17 @@ class Table {
             let i = 0;
             while (i < this.colCount) {
                 const colElem = document.createElement('col');
-                colElem.style.width = `${typeof colWidth === 'number' ? colWidth : (colWidth[i] || Table.defaultColWidth)}px`;
+                colElem.style.width = `${typeof options.colWidth === 'number' ? options.colWidth : (options.colWidth[i] || Table.defaultColWidth)}px`;
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
+            this.trs.forEach((tr) => {
+                tr.getTds().forEach((td) => {
+                    td.setEditable(this.editable);
+                });
+            });
         } catch (e) {
-            log.error('Invalid table data.', data, e);
+            log.error('Invalid table data.', options.data, e);
             return;
         }
         this.initEventListener();
@@ -394,6 +436,9 @@ class Table {
 
     private initEventListener() {
         this.elem.addEventListener('input', (e) => {
+            if (!this.editable) {
+                return;
+            }
             e.stopPropagation();
             const ep = getEventPath(e);
             const target = e.target;
@@ -406,7 +451,7 @@ class Table {
         const RESIZE_OFFSET = 5;
 
         this.elem.addEventListener('mousedown', (e) => {
-            if (!this.eventTargetIsCellContent(e)) {
+            if (!this.editable || !this.eventTargetIsCellContent(e)) {
                 return;
             }
             this.mouseDownPos = {
@@ -446,11 +491,17 @@ class Table {
         });
 
         this.elem.addEventListener('mouseup', (e) => {
+            if (!this.editable) {
+                return;
+            }
             this.elem.style.cursor = 'text';
             this.mouseMode = MouseMode.NONE;
         });
 
         this.elem.addEventListener('mousemove', (e) => {
+            if (!this.editable) {
+                return;
+            }
             const target = e.target;
             const ep = getEventPath(e);
             if (this.mouseMode === MouseMode.NONE) {
@@ -479,26 +530,31 @@ class Table {
         this.elem.addEventListener('mouseout', (e) => {
             this.elem.style.cursor = 'default';
         });
+
+        this.elem.addEventListener('focusin', (e) => {
+            if (this.eventTargetIsCellContent(e)) {
+                e.target['style'].background = this.cellFocusedBg;
+                const td: Td = e.target['parentElement'].td;
+                const rowRange = td.getRowRange();
+                const colRange = td.getColRange();
+                this.onCellFocus(new CellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+            }
+        });
+
+        this.elem.addEventListener('focusout', (e) => {
+            if (this.eventTargetIsCellContent(e)) {
+                e.target['style'].background = '';
+                const td: Td = e.target['parentElement'].td;
+                const rowRange = td.getRowRange();
+                const colRange = td.getColRange();
+                this.onCellBlur(new CellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+            }
+        });
     }
 
     private eventTargetIsCellContent(e) {
         const ep = getEventPath(e);
         return e.target instanceof HTMLElement && e.target.classList.contains('cell-content') && ep[4] === this.elem;
-    }
-
-    private columnOffsetLeft(idx: number): number {
-        const cols = this.colgroupElem.children;
-        let offset = 0;
-        if (idx < 0) {
-            return offset;
-        }
-        for (let i = 0; i < cols.length; i++) {
-            if (i === idx) {
-                break;
-            }
-            offset += +cols[i]['style'].width.slice(0, -2);
-        }
-        return offset;
     }
 
     addRow(rowIdx: number): number {
@@ -692,8 +748,54 @@ class Table {
         };
     }
 
+    setEditable(editable: boolean) {
+        if (this.editable === editable) {
+            return;
+        }
+        this.editable = editable;
+        const edt = this.editable ? 'true' : 'false';
+        this.trs.forEach((tr) => {
+            tr.getTds().forEach((td) => {
+                td.getElem().contentEditable = edt;
+            });
+        });
+    }
+
     destroy() {
         this.elem.remove();
+    }
+}
+
+class ColWidthCalculator {
+    private readonly data: object;
+    private readonly result: Array<number>;
+
+    constructor() {
+        this.data = Object.create(null);
+        this.result = [];
+    }
+
+    add(colRange: TdRange, width: number) {
+        if  (typeof width !== 'number') {
+            return;
+        }
+        if (colRange[0] === colRange[1]) {
+            if (colRange[0] > this.result.length - 1) {
+                for (let i = this.result.length; i <= colRange[0]; i++) {
+                    this.result.push(null);
+                }
+                this.result[colRange[0]] = width;
+            }
+        } else {
+            if (!(colRange[0] in this.data)) {
+                this.data[colRange[0]] = {};
+            }
+            this.data[colRange[0]][colRange[1]] = width;
+        }
+    }
+
+    calc(): Array<number> {
+        return this.result;
     }
 }
 

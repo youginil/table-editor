@@ -124,13 +124,11 @@
     <div id="preview"></div>
 </div>
 <script>
+var tab;
 (function () {
-  return;
   function getElementById(id) {
     return document.getElementById(id);
   }
-
-  var tab;
   getElementById('generate-table').addEventListener('click', function () {
     var rows = +getElementById('table-row').value;
     var columns = +getElementById('table-column').value;
@@ -145,11 +143,23 @@
         });
       }
     }
-    window.tab = new window.te.Editor({
+    window.tab = new window.te.TableEditor({
       elem: getElementById('preview'),
       data: data,
       colWidth: colWidth,
+      cellFocusedBg: 'red',
       debug: true
+    });
+    window.tab.addEventListener('load', function(e) {
+      console.log('loaded');
+    });
+
+    window.tab.addEventListener('cellfocus', function(e) {
+      console.log('cellfocus', e);
+    });
+
+    window.tab.addEventListener('cellblur', function(e) {
+      console.log('cellblur', e);
     });
   });
 

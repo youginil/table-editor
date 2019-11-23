@@ -11,32 +11,58 @@ import {
 } from "./command";
 import "../style/editor.scss";
 import {log} from "./log";
+import {EDITOR_EVENTS, EditorEventHandler} from "./event";
 
 type EditorOptions = {
     elem: HTMLElement
     data: TableData | TableCells
     colWidth?: number | Array<number>
+    editable?: boolean
+    cellFocusedBg?: string
     debug?: boolean
 }
+
+const NOT_EDITABLE_MSG = 'table can not be edit';
 
 export class TableEditor {
     static version = '0.0.1';
     private elem: HTMLElement;
     private readonly table: Table;
     private cmdHistory: CommandHistory;
+    private editable: boolean;
     private readonly debug: boolean;
+    private eventHandler: EditorEventHandler;
 
     constructor(options: EditorOptions) {
         this.elem = options.elem;
         this.elem.innerHTML = '';
         const className = `table-editor-${TableEditor.version.replace(/\./g, '-')}`;
-        this.table = new Table(className, options.data, options['colWidth'] || [], this.debug);
+        this.editable = 'editable' in options ? options.editable : true;
+        this.eventHandler = new EditorEventHandler();
+        this.table = new Table({
+            className: className,
+            data: options.data,
+            colWidth: options.colWidth || [],
+            editable: this.editable,
+            cellFocusedBg: options.cellFocusedBg || '',
+            debug: this.debug,
+            onCellFocus: (v) => {
+                this.eventHandler.trigger(EDITOR_EVENTS.CELL_FOCUS, v)
+            },
+            onCellBlur: (v) => {
+                this.eventHandler.trigger(EDITOR_EVENTS.CELL_BLUR, v);
+            }
+        });
         this.elem.appendChild(this.table.elem);
         this.cmdHistory = new CommandHistory(10);
         this.debug = 'debug' in options ? !!options.debug : false;
     }
 
-    addRow(rowIdx: number, above: boolean) {
+    addRow(rowIdx: number, above: boolean): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Add one row ${above ? 'above' : 'below'} row: ${rowIdx + 1}`);
         }
@@ -49,7 +75,11 @@ export class TableEditor {
         }
     }
 
-    delRow(rowIdx: number) {
+    delRow(rowIdx: number): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Delete row ${rowIdx + 1}`);
         }
@@ -62,7 +92,11 @@ export class TableEditor {
         }
     }
 
-    addColumn(colIdx: number, left: boolean) {
+    addColumn(colIdx: number, left: boolean): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Add one column ${left ? 'left' : 'right'} of column ${colIdx + 1}`);
         }
@@ -75,7 +109,11 @@ export class TableEditor {
         }
     }
 
-    delColumn(colIdx: number) {
+    delColumn(colIdx: number): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Delete column ${colIdx + 1}`);
         }
@@ -88,7 +126,11 @@ export class TableEditor {
         }
     }
 
-    mergeCells(rowRange: TdRange, colRange: TdRange) {
+    mergeCells(rowRange: TdRange, colRange: TdRange): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Merge cells. Row: ${rowRange[0] + 1} ~ ${rowRange[1] + 1}, Column: ${colRange[0] + 1} ~ ${colRange[1] + 1}`);
         }
@@ -101,7 +143,11 @@ export class TableEditor {
         }
     }
 
-    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number) {
+    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Split cell (${rowIdx + 1}, ${colIdx + 1}) into ${rowCount} rows and ${colCount} columns`);
         }
@@ -114,11 +160,15 @@ export class TableEditor {
         }
     }
 
-    getCellContent(rowIdx: number, colIdx: number) {
+    getCellContent(rowIdx: number, colIdx: number): string {
         return this.table.getCellContent(rowIdx, colIdx);
     }
 
-    setCellContent(rowIdx: number, colIdx: number, content: string) {
+    setCellContent(rowIdx: number, colIdx: number, content: string): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info(`Set cell (${rowIdx + 1}, ${colIdx + 1}) "${content}"`);
         }
@@ -131,7 +181,11 @@ export class TableEditor {
         }
     }
 
-    undo() {
+    undo(): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info('Undo');
         }
@@ -141,7 +195,11 @@ export class TableEditor {
         }
     }
 
-    redo() {
+    redo(): void {
+        if (!this.editable) {
+            log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log.info('Redo');
         }
@@ -151,8 +209,21 @@ export class TableEditor {
         }
     }
 
-    getTableData(): {rows: Array<Array<object>>, colWidth: Array<number>} {
+    getTableData(): { rows: Array<Array<object>>, colWidth: Array<number> } {
         return this.table.getTableData();
+    }
+
+    setEditable(editable: boolean): void {
+        this.editable = !!editable;
+        this.table.setEditable(this.editable);
+    }
+
+    addEventListener(name: string, handler: Function): void {
+        this.eventHandler.addHandler(name, handler);
+    }
+
+    removeEventListener(name: string, handler: Function): void {
+        this.eventHandler.removeHandler(name, handler);
     }
 
     private printDebugInfo() {
@@ -163,7 +234,7 @@ export class TableEditor {
         this.cmdHistory.printStatus();
     }
 
-    destroy() {
+    destroy(): void {
         this.table.destroy();
     }
 }
