@@ -139,7 +139,8 @@ var tab;
         data.push({
           row: [i, i],
           col: [j, j],
-          content: '(' + i + ',' + i + '),(' + j + ',' + j + ')'
+          content: '(' + i + ',' + i + '),(' + j + ',' + j + ')',
+          width: 60
         });
       }
     }
@@ -160,6 +161,10 @@ var tab;
 
     window.tab.addEventListener('cellblur', function(e) {
       console.log('cellblur', e);
+    });
+
+    window.tab.addEventListener('mousemove', function (e) {
+      console.log('mousemove', e);
     });
   });
 

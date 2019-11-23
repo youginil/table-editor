@@ -48,8 +48,9 @@ debug             | boolean                 | <optional\> | Debug switch. The de
 
 Name         | Callback param       | Description
 -------------|----------------------|-------------
-cellfocus    | CellFocusEvent       | Cell focused
-cellblur     | CellBlurEvent        | Cell blur 
+cellfocus    | TECellFocusEvent     | Cell focused
+cellblur     | TECellBlurEvent      | Cell blur 
+mousemove    | TEMouseMoveEvent     | Mouse move
 
 ### Type Definitions
 
@@ -70,13 +71,17 @@ type TableData = Array<TrData>
 
 type TableCells = Array<TdData>;
 
-class CellFocusEvent {
+class TECellFocusEvent {
     row: TdRange;
     col: TdRange;
 }
 
-class CellBlurEvent {
+class TECellBlurEvent {
     row: TdRange;
     col: TdRange;
+}
+class TEMouseMoveEvent {
+    offsetX: number;
+    offsetY: number;
 }
 ````

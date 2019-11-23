@@ -18,6 +18,7 @@ type EditorOptions = {
     data: TableData | TableCells
     colWidth?: number | Array<number>
     editable?: boolean
+    resizeable?: boolean
     cellFocusedBg?: string
     debug?: boolean
 }
@@ -44,6 +45,7 @@ export class TableEditor {
             data: options.data,
             colWidth: options.colWidth || [],
             editable: this.editable,
+            resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
             cellFocusedBg: options.cellFocusedBg || '',
             debug: this.debug,
             onCellFocus: (v) => {
@@ -51,6 +53,9 @@ export class TableEditor {
             },
             onCellBlur: (v) => {
                 this.eventHandler.trigger(EDITOR_EVENTS.CELL_BLUR, v);
+            },
+            onMouseMove: (v) => {
+                this.eventHandler.trigger(EDITOR_EVENTS.MOUSE_MOVE, v);
             }
         });
         this.elem.appendChild(this.table.elem);

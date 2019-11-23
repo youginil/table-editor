@@ -1,6 +1,6 @@
 import log from './log';
 import {insertNode, getEventPath} from "./dom";
-import {CellBlurEvent, CellFocusEvent} from "./event";
+import {TECellBlurEvent, TECellFocusEvent, TEMouseMoveEvent} from "./event";
 
 type TdRange = [number, number];
 type TdData = {
@@ -322,10 +322,12 @@ type tableOptions = {
     data: TableData | TableCells
     colWidth: number | Array<number>
     editable: boolean
+    resizeable: boolean
     cellFocusedBg: string
     debug: boolean
     onCellFocus: (CellFocusEvent) => void
     onCellBlur: (CellBlurEvent) => void
+    onMouseMove: (MouseMoveEvent) => void
 };
 
 class Table {
@@ -338,9 +340,11 @@ class Table {
     private colCount: number = 0;
     private readonly cellFocusedBg: string;
     private editable: boolean;
+    private readonly resizeable: boolean;
     private debug: boolean;
     private readonly onCellFocus: (CellFocusEvent) => void;
     private readonly onCellBlur: (CellBlurEvent) => void;
+    private readonly onMouseMove: (MouseMoveEvent) => void;
 
     private mouseMode: MouseMode = MouseMode.NONE;
     private mouseDownPos: { pageX: number, pageY: number, clientX: number, clientY: number };
@@ -358,10 +362,12 @@ class Table {
         this.tbodyElem = this.elem.querySelector('tbody');
         this.trs = [];
         this.editable = options.editable;
+        this.resizeable = options.resizeable;
         this.cellFocusedBg = options.cellFocusedBg;
         this.debug = options.debug;
         this.onCellFocus = options.onCellFocus;
         this.onCellBlur = options.onCellBlur;
+        this.onMouseMove = options.onMouseMove;
         if (!options.data) {
             (<TableData>options.data) = [[{
                 row: [0, 0],
@@ -416,9 +422,10 @@ class Table {
             }
             this.colCount++;
             let i = 0;
+            const colWidthCalculated = cwc.calc(this.colCount, options.colWidth);
             while (i < this.colCount) {
                 const colElem = document.createElement('col');
-                colElem.style.width = `${typeof options.colWidth === 'number' ? options.colWidth : (options.colWidth[i] || Table.defaultColWidth)}px`;
+                colElem.style.width = `${colWidthCalculated[i] || Table.defaultColWidth}px`;
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
@@ -464,6 +471,9 @@ class Table {
             const td = <Td>target['parentNode']['td'];
             let tmpIdx = td.getColRange()[0] + (target['offsetX'] < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
+                if (!this.resizeable) {
+                    return;
+                }
                 if (e.offsetX < RESIZE_OFFSET) {
                     tmpIdx--;
                 }
@@ -499,32 +509,42 @@ class Table {
         });
 
         this.elem.addEventListener('mousemove', (e) => {
-            if (!this.editable) {
-                return;
-            }
             const target = e.target;
             const ep = getEventPath(e);
             if (this.mouseMode === MouseMode.NONE) {
                 if (this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > e.target['clientWidth'] - RESIZE_OFFSET)) {
-                    this.elem.style.cursor = 'col-resize';
+                    // 鼠标在竖线上
+                    if (this.resizeable) {
+                        this.elem.style.cursor = 'col-resize';
+                    }
                 } else {
-                    this.elem.style.cursor = 'text';
+                    if (this.editable) {
+                        this.elem.style.cursor = 'text';
+                    }
                 }
             } else if (this.mouseMode === MouseMode.RESIZE) {
-                this.elem.style.cursor = 'col-resize';
-                const startPageX = this.mouseDownPos.pageX;
-                const leftOffset = e.pageX < startPageX
-                    ? Math.min(startPageX - e.pageX, this.resizeRange[0])
-                    : -Math.min(e.pageX - startPageX, this.resizeRange[1]);
-                const leftColEl = this.colElsResizing[0];
-                leftColEl.style.width = `${leftColEl['originWidth'] - leftOffset}px`;
-                if (this.colElsResizing.length > 1) {
-                    const rightColEl = this.colElsResizing[1];
-                    rightColEl.style.width = `${rightColEl['originWidth'] + leftOffset}px`;
+                if (this.resizeable) {
+                    this.elem.style.cursor = 'col-resize';
+                    const startPageX = this.mouseDownPos.pageX;
+                    const leftOffset = e.pageX < startPageX
+                        ? Math.min(startPageX - e.pageX, this.resizeRange[0])
+                        : -Math.min(e.pageX - startPageX, this.resizeRange[1]);
+                    const leftColEl = this.colElsResizing[0];
+                    leftColEl.style.width = `${leftColEl['originWidth'] - leftOffset}px`;
+                    if (this.colElsResizing.length > 1) {
+                        const rightColEl = this.colElsResizing[1];
+                        rightColEl.style.width = `${rightColEl['originWidth'] + leftOffset}px`;
+                    }
                 }
             } else if (this.mouseMode === MouseMode.SELECT) {
-                //
+                if (this.editable) {
+                    //
+                }
             }
+            this.onMouseMove(new TEMouseMoveEvent({
+                offsetX: e.offsetX,
+                offsetY: e.offsetY
+            }));
         });
 
         this.elem.addEventListener('mouseout', (e) => {
@@ -537,7 +557,7 @@ class Table {
                 const td: Td = e.target['parentElement'].td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
-                this.onCellFocus(new CellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+                this.onCellFocus(new TECellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
             }
         });
 
@@ -547,7 +567,7 @@ class Table {
                 const td: Td = e.target['parentElement'].td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
-                this.onCellBlur(new CellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+                this.onCellBlur(new TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
             }
         });
     }
@@ -794,7 +814,18 @@ class ColWidthCalculator {
         }
     }
 
-    calc(): Array<number> {
+    calc(colCount: number, colWidth: number | Array<number>): Array<number> {
+        if (colCount > this.result.length) {
+            for (let i = this.result.length; i < colCount; i++) {
+                this.result.push(null);
+            }
+        }
+        const isNum: boolean = typeof colWidth === 'number';
+        this.result.forEach((w, i) => {
+            if (w === null) {
+                this.result[i] = isNum ? colWidth : colWidth[i];
+            }
+        });
         return this.result;
     }
 }

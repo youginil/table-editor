@@ -544,7 +544,6 @@ var CommandMacro = /** @class */ (function () {
         for (var i = 0; i < this.commands.length; i++) {
             if (!this.commands[i].execute()) {
                 log_1.default.error("CommandMacro fail on " + i + "th command.", this.commands);
-                debugger;
                 while (--i >= 0) {
                     this.commands[i].undo();
                 }
@@ -1349,17 +1348,43 @@ var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
 var command_1 = __webpack_require__(/*! ./command */ "./src/command.ts");
 __webpack_require__(/*! ../style/editor.scss */ "./style/editor.scss");
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
+var event_1 = __webpack_require__(/*! ./event */ "./src/event.ts");
+var NOT_EDITABLE_MSG = 'table can not be edit';
 var TableEditor = /** @class */ (function () {
     function TableEditor(options) {
+        var _this = this;
         this.elem = options.elem;
         this.elem.innerHTML = '';
         var className = "table-editor-" + TableEditor.version.replace(/\./g, '-');
-        this.table = new table_1.Table(className, options.data, options['colWidth'] || [], this.debug);
+        this.editable = 'editable' in options ? options.editable : true;
+        this.eventHandler = new event_1.EditorEventHandler();
+        this.table = new table_1.Table({
+            className: className,
+            data: options.data,
+            colWidth: options.colWidth || [],
+            editable: this.editable,
+            resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
+            cellFocusedBg: options.cellFocusedBg || '',
+            debug: this.debug,
+            onCellFocus: function (v) {
+                _this.eventHandler.trigger(event_1.EDITOR_EVENTS.CELL_FOCUS, v);
+            },
+            onCellBlur: function (v) {
+                _this.eventHandler.trigger(event_1.EDITOR_EVENTS.CELL_BLUR, v);
+            },
+            onMouseMove: function (v) {
+                _this.eventHandler.trigger(event_1.EDITOR_EVENTS.MOUSE_MOVE, v);
+            }
+        });
         this.elem.appendChild(this.table.elem);
         this.cmdHistory = new CommandHistory(10);
         this.debug = 'debug' in options ? !!options.debug : false;
     }
     TableEditor.prototype.addRow = function (rowIdx, above) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Add one row " + (above ? 'above' : 'below') + " row: " + (rowIdx + 1));
         }
@@ -1372,6 +1397,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.delRow = function (rowIdx) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Delete row " + (rowIdx + 1));
         }
@@ -1384,6 +1413,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.addColumn = function (colIdx, left) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Add one column " + (left ? 'left' : 'right') + " of column " + (colIdx + 1));
         }
@@ -1396,6 +1429,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.delColumn = function (colIdx) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Delete column " + (colIdx + 1));
         }
@@ -1408,6 +1445,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.mergeCells = function (rowRange, colRange) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Merge cells. Row: " + (rowRange[0] + 1) + " ~ " + (rowRange[1] + 1) + ", Column: " + (colRange[0] + 1) + " ~ " + (colRange[1] + 1));
         }
@@ -1420,6 +1461,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.splitCell = function (rowIdx, colIdx, rowCount, colCount) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Split cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") into " + rowCount + " rows and " + colCount + " columns");
         }
@@ -1435,6 +1480,10 @@ var TableEditor = /** @class */ (function () {
         return this.table.getCellContent(rowIdx, colIdx);
     };
     TableEditor.prototype.setCellContent = function (rowIdx, colIdx, content) {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info("Set cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") \"" + content + "\"");
         }
@@ -1447,6 +1496,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.undo = function () {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info('Undo');
         }
@@ -1456,6 +1509,10 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.redo = function () {
+        if (!this.editable) {
+            log_1.log.warn(NOT_EDITABLE_MSG);
+            return;
+        }
         if (this.debug) {
             log_1.log.info('Redo');
         }
@@ -1466,6 +1523,16 @@ var TableEditor = /** @class */ (function () {
     };
     TableEditor.prototype.getTableData = function () {
         return this.table.getTableData();
+    };
+    TableEditor.prototype.setEditable = function (editable) {
+        this.editable = !!editable;
+        this.table.setEditable(this.editable);
+    };
+    TableEditor.prototype.addEventListener = function (name, handler) {
+        this.eventHandler.addHandler(name, handler);
+    };
+    TableEditor.prototype.removeEventListener = function (name, handler) {
+        this.eventHandler.removeHandler(name, handler);
     };
     TableEditor.prototype.printDebugInfo = function () {
         var errorMsg = this.table.validate();
@@ -1523,6 +1590,95 @@ var CommandHistory = /** @class */ (function () {
     };
     return CommandHistory;
 }());
+
+
+/***/ }),
+
+/***/ "./src/event.ts":
+/*!**********************!*\
+  !*** ./src/event.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
+exports.EDITOR_EVENTS = {
+    CELL_FOCUS: 'cellfocus',
+    CELL_BLUR: 'cellblur',
+    MOUSE_MOVE: 'mousemove'
+};
+var eventNames = Object.keys(exports.EDITOR_EVENTS).map(function (k) {
+    return exports.EDITOR_EVENTS[k];
+});
+var EditorEventHandler = /** @class */ (function () {
+    function EditorEventHandler() {
+        var _this = this;
+        this.events = new Map();
+        eventNames.forEach(function (n) {
+            _this.events.set(n, []);
+        });
+    }
+    EditorEventHandler.prototype.addHandler = function (name, handler) {
+        if (!this.events.has(name)) {
+            log_1.default.warn("Invalid event: " + name + ". Available events: " + eventNames.join(', '));
+            return;
+        }
+        if (typeof handler !== 'function') {
+            log_1.default.warn("Invalid event handler");
+            return;
+        }
+        this.events.get(name).push(handler);
+    };
+    EditorEventHandler.prototype.removeHandler = function (name, handler) {
+        if (!this.events.has(name)) {
+            log_1.default.warn("Invalid event: " + name + ". Available events: " + eventNames.join(', '));
+            return;
+        }
+        if (typeof handler !== 'function') {
+            log_1.default.warn("Invalid event handler");
+            return;
+        }
+        var hs = this.events.get(name);
+        var idx = hs.indexOf(handler);
+        if (idx >= 0) {
+            hs.splice(idx, 1);
+        }
+    };
+    EditorEventHandler.prototype.trigger = function (name, value) {
+        this.events.get(name).forEach(function (h) {
+            h(value);
+        });
+    };
+    return EditorEventHandler;
+}());
+exports.EditorEventHandler = EditorEventHandler;
+var TECellFocusEvent = /** @class */ (function () {
+    function TECellFocusEvent(row, col) {
+        this.row = row;
+        this.col = col;
+    }
+    return TECellFocusEvent;
+}());
+exports.TECellFocusEvent = TECellFocusEvent;
+var TECellBlurEvent = /** @class */ (function () {
+    function TECellBlurEvent(row, col) {
+        this.row = row;
+        this.col = col;
+    }
+    return TECellBlurEvent;
+}());
+exports.TECellBlurEvent = TECellBlurEvent;
+var TEMouseMoveEvent = /** @class */ (function () {
+    function TEMouseMoveEvent(data) {
+        this.offsetX = data.offsetX;
+        this.offsetY = data.offsetY;
+    }
+    return TEMouseMoveEvent;
+}());
+exports.TEMouseMoveEvent = TEMouseMoveEvent;
 
 
 /***/ }),
@@ -1585,6 +1741,7 @@ exports.default = exports.log;
 Object.defineProperty(exports, "__esModule", { value: true });
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
 var dom_1 = __webpack_require__(/*! ./dom */ "./src/dom.ts");
+var event_1 = __webpack_require__(/*! ./event */ "./src/event.ts");
 function tdRangeToString(range) {
     if (range.length === 0) {
         return '';
@@ -1603,11 +1760,11 @@ var Td = /** @class */ (function () {
         var _this = this;
         this.content = content || '';
         this.elem = document.createElement('td');
-        var div = document.createElement('div');
-        div.className = 'cell-content';
-        div.contentEditable = 'true';
-        div.innerText = this.content;
-        this.elem.appendChild(div);
+        // cc is short for "content cell"
+        this.ccElem = document.createElement('div');
+        this.ccElem.className = 'cell-content';
+        this.ccElem.innerText = this.content;
+        this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
         this.setRowRange(rowRange);
         this.setColRange(colRange);
@@ -1655,8 +1812,17 @@ var Td = /** @class */ (function () {
             this.elem.innerText = content;
         }
     };
-    Td.prototype.remove = function () {
-        this.elem.remove();
+    Td.prototype.setEditable = function (editable) {
+        if (this.editable === editable) {
+            return;
+        }
+        this.editable = editable;
+        if (this.editable) {
+            this.ccElem.contentEditable = 'true';
+        }
+        else {
+            this.ccElem.removeAttribute('contenteditable');
+        }
     };
     return Td;
 }());
@@ -1852,19 +2018,25 @@ var MouseMode;
     MouseMode[MouseMode["SELECT"] = 2] = "SELECT";
 })(MouseMode || (MouseMode = {}));
 var Table = /** @class */ (function () {
-    function Table(className, data, colWidth, debug) {
+    function Table(options) {
         var _this = this;
         this.colCount = 0;
         this.mouseMode = MouseMode.NONE;
         this.elem = document.createElement('table');
-        this.elem.className = className;
+        this.elem.className = options.className;
         this.elem.innerHTML = '<colgroup></colgroup><tbody></tbody>';
         this.colgroupElem = this.elem.querySelector('colgroup');
         this.tbodyElem = this.elem.querySelector('tbody');
         this.trs = [];
-        this.debug = debug;
-        if (!data) {
-            data = [[{
+        this.editable = options.editable;
+        this.resizeable = options.resizeable;
+        this.cellFocusedBg = options.cellFocusedBg;
+        this.debug = options.debug;
+        this.onCellFocus = options.onCellFocus;
+        this.onCellBlur = options.onCellBlur;
+        this.onMouseMove = options.onMouseMove;
+        if (!options.data) {
+            options.data = [[{
                         row: [0, 0],
                         col: [0, 0],
                         content: '',
@@ -1872,9 +2044,11 @@ var Table = /** @class */ (function () {
                     }]];
         }
         try {
+            var data = options.data;
             if (data.length === 0) {
                 return;
             }
+            var cwc_1 = new ColWidthCalculator();
             if ('row' in data[0]) {
                 // TableCells
                 data.forEach(function (tdData) {
@@ -1889,6 +2063,9 @@ var Table = /** @class */ (function () {
                     }
                     var tr = _this.trs[rowRange[0]];
                     tr.addTd(new Td(rowRange, colRange, tdData.content, { style: tdData.style || {} }));
+                    if ('width' in tdData) {
+                        cwc_1.add(colRange, tdData.width);
+                    }
                     if (_this.colCount < colRange[1]) {
                         _this.colCount = colRange[1];
                     }
@@ -1901,6 +2078,9 @@ var Table = /** @class */ (function () {
                         if (_this.colCount < td.col[1]) {
                             _this.colCount = td.col[1];
                         }
+                        if ('width' in td) {
+                            cwc_1.add(td.col, td.width);
+                        }
                         return new Td(td.row, td.col, td.content, { style: td.style || {} });
                     });
                     var tr = new Tr(tds);
@@ -1910,15 +2090,21 @@ var Table = /** @class */ (function () {
             }
             this.colCount++;
             var i = 0;
+            var colWidthCalculated = cwc_1.calc(this.colCount, options.colWidth);
             while (i < this.colCount) {
                 var colElem = document.createElement('col');
-                colElem.style.width = (typeof colWidth === 'number' ? colWidth : (colWidth[i] || Table.defaultColWidth)) + "px";
+                colElem.style.width = (colWidthCalculated[i] || Table.defaultColWidth) + "px";
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
+            this.trs.forEach(function (tr) {
+                tr.getTds().forEach(function (td) {
+                    td.setEditable(_this.editable);
+                });
+            });
         }
         catch (e) {
-            log_1.default.error('Invalid table data.', data, e);
+            log_1.default.error('Invalid table data.', options.data, e);
             return;
         }
         this.initEventListener();
@@ -1926,6 +2112,9 @@ var Table = /** @class */ (function () {
     Table.prototype.initEventListener = function () {
         var _this = this;
         this.elem.addEventListener('input', function (e) {
+            if (!_this.editable) {
+                return;
+            }
             e.stopPropagation();
             var ep = dom_1.getEventPath(e);
             var target = e.target;
@@ -1936,7 +2125,7 @@ var Table = /** @class */ (function () {
         });
         var RESIZE_OFFSET = 5;
         this.elem.addEventListener('mousedown', function (e) {
-            if (!_this.eventTargetIsCellContent(e)) {
+            if (!_this.editable || !_this.eventTargetIsCellContent(e)) {
                 return;
             }
             _this.mouseDownPos = {
@@ -1949,6 +2138,9 @@ var Table = /** @class */ (function () {
             var td = target['parentNode']['td'];
             var tmpIdx = td.getColRange()[0] + (target['offsetX'] < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
+                if (!_this.resizeable) {
+                    return;
+                }
                 if (e.offsetX < RESIZE_OFFSET) {
                     tmpIdx--;
                 }
@@ -1977,6 +2169,9 @@ var Table = /** @class */ (function () {
             }
         });
         this.elem.addEventListener('mouseup', function (e) {
+            if (!_this.editable) {
+                return;
+            }
             _this.elem.style.cursor = 'text';
             _this.mouseMode = MouseMode.NONE;
         });
@@ -1985,50 +2180,67 @@ var Table = /** @class */ (function () {
             var ep = dom_1.getEventPath(e);
             if (_this.mouseMode === MouseMode.NONE) {
                 if (_this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > e.target['clientWidth'] - RESIZE_OFFSET)) {
-                    _this.elem.style.cursor = 'col-resize';
+                    // 鼠标在竖线上
+                    if (_this.resizeable) {
+                        _this.elem.style.cursor = 'col-resize';
+                    }
                 }
                 else {
-                    _this.elem.style.cursor = 'text';
+                    if (_this.editable) {
+                        _this.elem.style.cursor = 'text';
+                    }
                 }
             }
             else if (_this.mouseMode === MouseMode.RESIZE) {
-                _this.elem.style.cursor = 'col-resize';
-                var startPageX = _this.mouseDownPos.pageX;
-                var leftOffset = e.pageX < startPageX
-                    ? Math.min(startPageX - e.pageX, _this.resizeRange[0])
-                    : -Math.min(e.pageX - startPageX, _this.resizeRange[1]);
-                var leftColEl = _this.colElsResizing[0];
-                leftColEl.style.width = leftColEl['originWidth'] - leftOffset + "px";
-                if (_this.colElsResizing.length > 1) {
-                    var rightColEl = _this.colElsResizing[1];
-                    rightColEl.style.width = rightColEl['originWidth'] + leftOffset + "px";
+                if (_this.resizeable) {
+                    _this.elem.style.cursor = 'col-resize';
+                    var startPageX = _this.mouseDownPos.pageX;
+                    var leftOffset = e.pageX < startPageX
+                        ? Math.min(startPageX - e.pageX, _this.resizeRange[0])
+                        : -Math.min(e.pageX - startPageX, _this.resizeRange[1]);
+                    var leftColEl = _this.colElsResizing[0];
+                    leftColEl.style.width = leftColEl['originWidth'] - leftOffset + "px";
+                    if (_this.colElsResizing.length > 1) {
+                        var rightColEl = _this.colElsResizing[1];
+                        rightColEl.style.width = rightColEl['originWidth'] + leftOffset + "px";
+                    }
                 }
             }
             else if (_this.mouseMode === MouseMode.SELECT) {
-                //
+                if (_this.editable) {
+                    //
+                }
             }
+            _this.onMouseMove(new event_1.TEMouseMoveEvent({
+                offsetX: e.offsetX,
+                offsetY: e.offsetY
+            }));
         });
         this.elem.addEventListener('mouseout', function (e) {
             _this.elem.style.cursor = 'default';
+        });
+        this.elem.addEventListener('focusin', function (e) {
+            if (_this.eventTargetIsCellContent(e)) {
+                e.target['style'].background = _this.cellFocusedBg;
+                var td = e.target['parentElement'].td;
+                var rowRange = td.getRowRange();
+                var colRange = td.getColRange();
+                _this.onCellFocus(new event_1.TECellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+            }
+        });
+        this.elem.addEventListener('focusout', function (e) {
+            if (_this.eventTargetIsCellContent(e)) {
+                e.target['style'].background = '';
+                var td = e.target['parentElement'].td;
+                var rowRange = td.getRowRange();
+                var colRange = td.getColRange();
+                _this.onCellBlur(new event_1.TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
+            }
         });
     };
     Table.prototype.eventTargetIsCellContent = function (e) {
         var ep = dom_1.getEventPath(e);
         return e.target instanceof HTMLElement && e.target.classList.contains('cell-content') && ep[4] === this.elem;
-    };
-    Table.prototype.columnOffsetLeft = function (idx) {
-        var cols = this.colgroupElem.children;
-        var offset = 0;
-        if (idx < 0) {
-            return offset;
-        }
-        for (var i = 0; i < cols.length; i++) {
-            if (i === idx) {
-                break;
-            }
-            offset += +cols[i]['style'].width.slice(0, -2);
-        }
-        return offset;
     };
     Table.prototype.addRow = function (rowIdx) {
         if (rowIdx < 0 || rowIdx > this.trs.length) {
@@ -2206,6 +2418,18 @@ var Table = /** @class */ (function () {
             colWidth: colWidth
         };
     };
+    Table.prototype.setEditable = function (editable) {
+        if (this.editable === editable) {
+            return;
+        }
+        this.editable = editable;
+        var edt = this.editable ? 'true' : 'false';
+        this.trs.forEach(function (tr) {
+            tr.getTds().forEach(function (td) {
+                td.getElem().contentEditable = edt;
+            });
+        });
+    };
     Table.prototype.destroy = function () {
         this.elem.remove();
     };
@@ -2213,6 +2437,47 @@ var Table = /** @class */ (function () {
     return Table;
 }());
 exports.Table = Table;
+var ColWidthCalculator = /** @class */ (function () {
+    function ColWidthCalculator() {
+        this.data = Object.create(null);
+        this.result = [];
+    }
+    ColWidthCalculator.prototype.add = function (colRange, width) {
+        if (typeof width !== 'number') {
+            return;
+        }
+        if (colRange[0] === colRange[1]) {
+            if (colRange[0] > this.result.length - 1) {
+                for (var i = this.result.length; i <= colRange[0]; i++) {
+                    this.result.push(null);
+                }
+                this.result[colRange[0]] = width;
+            }
+        }
+        else {
+            if (!(colRange[0] in this.data)) {
+                this.data[colRange[0]] = {};
+            }
+            this.data[colRange[0]][colRange[1]] = width;
+        }
+    };
+    ColWidthCalculator.prototype.calc = function (colCount, colWidth) {
+        var _this = this;
+        if (colCount > this.result.length) {
+            for (var i = this.result.length; i < colCount; i++) {
+                this.result.push(null);
+            }
+        }
+        var isNum = typeof colWidth === 'number';
+        this.result.forEach(function (w, i) {
+            if (w === null) {
+                _this.result[i] = isNum ? colWidth : colWidth[i];
+            }
+        });
+        return this.result;
+    };
+    return ColWidthCalculator;
+}());
 
 
 /***/ }),

@@ -1,9 +1,10 @@
 import {Td, TdRange} from "./table";
 import log from "./log";
 
-export const  EDITOR_EVENTS = {
+export const EDITOR_EVENTS = {
     CELL_FOCUS: 'cellfocus',
-    CELL_BLUR: 'cellblur'
+    CELL_BLUR: 'cellblur',
+    MOUSE_MOVE: 'mousemove'
 };
 
 const eventNames = Object.keys(EDITOR_EVENTS).map((k) => {
@@ -55,7 +56,7 @@ export class EditorEventHandler {
     }
 }
 
-export class CellFocusEvent {
+export class TECellFocusEvent {
     row: TdRange;
     col: TdRange;
 
@@ -65,12 +66,27 @@ export class CellFocusEvent {
     }
 }
 
-export class CellBlurEvent {
+export class TECellBlurEvent {
     row: TdRange;
     col: TdRange;
 
     constructor(row: TdRange, col: TdRange) {
         this.row = row;
         this.col = col;
+    }
+}
+
+type mouseMoveParam = {
+    offsetX: number
+    offsetY: number
+}
+
+export class TEMouseMoveEvent {
+    offsetX: number;
+    offsetY: number;
+
+    constructor(data: mouseMoveParam) {
+        this.offsetX = data.offsetX;
+        this.offsetY = data.offsetY;
     }
 }
