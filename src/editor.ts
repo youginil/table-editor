@@ -20,10 +20,11 @@ type EditorOptions = {
     editable?: boolean
     resizeable?: boolean
     cellFocusedBg?: string
+    borderColor?: string
     debug?: boolean
 }
 
-const NOT_EDITABLE_MSG = 'table can not be edit';
+const NOT_EDITABLE_MSG = 'Table can not be edit';
 
 export class TableEditor {
     static version = '0.0.1';
@@ -47,6 +48,7 @@ export class TableEditor {
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
             cellFocusedBg: options.cellFocusedBg || '',
+            borderColor: options.borderColor || '',
             debug: this.debug,
             onCellFocus: (v) => {
                 this.eventHandler.trigger(EDITOR_EVENTS.CELL_FOCUS, v)

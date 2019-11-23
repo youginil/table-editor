@@ -252,10 +252,10 @@ class CmdRemoveBlankRows implements Command {
 
     constructor(table: Table) {
         this.table = table;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         const trs = this.table.getRows();
         for (let i = 0; i < trs.length; i++) {
             if (trs[i].getTds().length === 0) {
@@ -286,7 +286,7 @@ export class CmdAddRow implements Command {
     }
 
     execute(): boolean {
-        this.cmdMacro = new CommandMacro([]);
+        this.cmdMacro = new CommandMacro();
         const trs = this.table.getRows();
         if (this.refRowIdx < 0 || this.refRowIdx >= trs.length) {
             log.error('CmdAddRow', `Invalid refRowIdx: ${this.refRowIdx}`);
@@ -310,7 +310,10 @@ export class CmdAddRow implements Command {
             const relTdRowRange = relTd.getRowRange();
             // 如果单元格跨行，向下增加行时不用加单元格，但需要把单元格的跨行+1
             if (relTdRowRange[0] === relTdRowRange[1] || this.above) {
-                const tmpTd = new Td([targetRowIdx, targetRowIdx], [relTdColRange[0], relTdColRange[1]]);
+                const tmpTd = this.table.createTd({
+                    rowRange: [targetRowIdx, targetRowIdx],
+                    colRange: [relTdColRange[0], relTdColRange[1]]
+                });
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             } else {
                 this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, relTdRowRange[0], relTdColRange[0], [relTdRowRange[0], relTdRowRange[1] + 1]));
@@ -364,10 +367,10 @@ export class CmdDelRow implements Command {
     constructor(table: Table, rowIdx: number) {
         this.table = table;
         this.rowIdx = rowIdx;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         const tr = this.table.getRowByIndex(this.rowIdx);
         if (!tr) {
             return false;
@@ -397,10 +400,10 @@ export class CmdAddColumn implements Command {
         this.table = table;
         this.refColIdx = refColIdx;
         this.left = left;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         this.cmdMacro.addCommand(new CmdAddColHeader(this.table, this.left ? this.refColIdx : this.refColIdx + 1));
         const colCount = this.table.getColCount();
         const trs = this.table.getRows();
@@ -430,7 +433,10 @@ export class CmdAddColumn implements Command {
                         // 插入不跨列的单元格
                         const tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
                         this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
-                        const tmpTd = new Td([i, i], [tmpColIdx, tmpColIdx]);
+                        const tmpTd = this.table.createTd({
+                            rowRange: [i, i],
+                            colRange: [tmpColIdx, tmpColIdx]
+                        });
                         this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
                     }
                     break;
@@ -468,10 +474,10 @@ export class CmdDelColumn implements Command {
     constructor(table: Table, colIdx: number) {
         this.table = table;
         this.colIdx = colIdx;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         this.cmdMacro.addCommand(new CmdDelColHeader(this.table, this.colIdx));
         const firstTr = this.table.getRowByIndex(0);
         let firstTd = firstTr.getTdByColIndex(this.colIdx);
@@ -661,10 +667,10 @@ export class CmdMergeCells implements Command {
         this.table = table;
         this.rowRange = rowRange;
         this.colRange = colRange;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         const rowRange = this.rowRange;
         const colRange = this.colRange;
         const trs = this.table.getRows();
@@ -734,7 +740,11 @@ export class CmdMergeCells implements Command {
                 return r + td.getContent();
             }, '');
         }
-        const tdMerged = new Td(rowRange, colRange, content);
+        const tdMerged = this.table.createTd({
+            rowRange,
+            colRange,
+            content
+        });
         this.cmdMacro.addCommand(new CmdAddCell(this.table, tdMerged), new CmdRemoveBlankRows(this.table));
         return this.cmdMacro.execute();
     }
@@ -758,10 +768,10 @@ export class CmdSplitCell implements Command {
         this.colIdx = colIdx;
         this.rowCount = rowCount;
         this.colCount = colCount;
-        this.cmdMacro = new CommandMacro();
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         const trs = this.table.getRows();
         if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
             log.error('CmdSplitCell', `Invalid rowIdx: ${this.rowIdx}`);
@@ -819,7 +829,10 @@ export class CmdSplitCell implements Command {
         this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, originStartRowIdx, originStartColIdx, [originStartRowIdx, originStartRowIdx + rowStep - 1]));
         // 插入单元格到被拆分的单元格中
         for (let i = originStartRowIdx + rowStep; i < endRowIdxAfterSplit + 1; i += rowStep) {
-            const tmpTd = new Td([i, i + rowStep - 1], [originStartColIdx, originEndColIdx]);
+            const tmpTd = this.table.createTd({
+                rowRange: [i, i + rowStep - 1],
+                colRange: [originStartColIdx, originEndColIdx]
+            });
             this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
         }
         // 修改行后的末行索引
@@ -852,7 +865,10 @@ export class CmdSplitCell implements Command {
             this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
             // 插入新增的单元格
             for (let j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
-                const tmpTd = new Td([i, i + rowStep - 1], [j, j + colStep - 1]);
+                const tmpTd = this.table.createTd({
+                    rowRange: [i, i + rowStep - 1],
+                    colRange: [j, j + colStep - 1]
+                });
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             }
         }

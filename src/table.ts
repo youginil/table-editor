@@ -32,6 +32,13 @@ function tdRangeToString(range: TdRange | Array<TdRange>): string {
     return `[${tmpArr.join(', ')}]`;
 }
 
+type tdOptions = {
+    rowRange: TdRange
+    colRange: TdRange
+    content?: string
+    props?: Props
+};
+
 class Td {
     private rowRange: TdRange;
     private colRange: TdRange;
@@ -41,8 +48,8 @@ class Td {
     private props: Props;
     private editable: boolean;
 
-    constructor(rowRange: TdRange, colRange: TdRange, content?: string, props?: Props) {
-        this.content = content || '';
+    constructor(options: tdOptions) {
+        this.content = options.content || '';
         this.elem = document.createElement('td');
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
@@ -50,9 +57,9 @@ class Td {
         this.ccElem.innerText = this.content;
         this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
-        this.setRowRange(rowRange);
-        this.setColRange(colRange);
-        this.props = props || {};
+        this.setRowRange(options.rowRange);
+        this.setColRange(options.colRange);
+        this.props = options.props || {};
         if (this.props.style) {
             Object.keys(this.props.style).forEach((k) => {
                 this.elem.style[k] = this.props.style[k];
@@ -324,6 +331,7 @@ type tableOptions = {
     editable: boolean
     resizeable: boolean
     cellFocusedBg: string
+    borderColor: string
     debug: boolean
     onCellFocus: (CellFocusEvent) => void
     onCellBlur: (CellBlurEvent) => void
@@ -339,6 +347,7 @@ class Table {
     private readonly trs: Array<Tr>;
     private colCount: number = 0;
     private readonly cellFocusedBg: string;
+    private readonly borderColor: string;
     private editable: boolean;
     private readonly resizeable: boolean;
     private debug: boolean;
@@ -364,6 +373,7 @@ class Table {
         this.editable = options.editable;
         this.resizeable = options.resizeable;
         this.cellFocusedBg = options.cellFocusedBg;
+        this.borderColor = options.borderColor;
         this.debug = options.debug;
         this.onCellFocus = options.onCellFocus;
         this.onCellBlur = options.onCellBlur;
@@ -395,7 +405,16 @@ class Table {
                         }
                     }
                     const tr = this.trs[rowRange[0]];
-                    tr.addTd(new Td(rowRange, colRange, tdData.content, {style: tdData.style || {}}));
+                    const style = {};
+                    if (this.borderColor) {
+                        style['borderColor'] = this.borderColor;
+                    }
+                    tr.addTd(this.createTd({
+                        rowRange,
+                        colRange,
+                        content: tdData.content,
+                        props: {style}
+                    }));
                     if ('width' in tdData) {
                         cwc.add(colRange, tdData.width);
                     }
@@ -413,7 +432,16 @@ class Table {
                         if ('width' in td) {
                             cwc.add(td.col, td.width);
                         }
-                        return new Td(td.row, td.col, td.content, {style: td.style || {}});
+                        const style = {};
+                        if (this.borderColor) {
+                            style['borderColor'] = this.borderColor;
+                        }
+                        return this.createTd({
+                            rowRange: td.row,
+                            colRange: td.col,
+                            content: td.content,
+                            props: {style}
+                        });
                     });
                     const tr = new Tr(tds);
                     this.tbodyElem.appendChild(tr.getElem());
@@ -570,6 +598,19 @@ class Table {
                 this.onCellBlur(new TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
             }
         });
+    }
+
+    createTd(options: tdOptions): Td {
+        if (!options.props) {
+            options.props = {};
+        }
+        if (!options.props.style) {
+            options.props.style = {};
+        }
+        if (this.borderColor) {
+            options.props.style['borderColor'] = this.borderColor;
+        }
+        return new Td(options);
     }
 
     private eventTargetIsCellContent(e) {
@@ -796,7 +837,7 @@ class ColWidthCalculator {
     }
 
     add(colRange: TdRange, width: number) {
-        if  (typeof width !== 'number') {
+        if (typeof width !== 'number') {
             return;
         }
         if (colRange[0] === colRange[1]) {
