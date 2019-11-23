@@ -86,3 +86,6 @@ class TEMouseMoveEvent {
     offsetY: number;
 }
 ````
+
+### Todo
+* Select cells by drag

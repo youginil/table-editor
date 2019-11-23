@@ -514,7 +514,6 @@ module.exports = function (list, options) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
 var CmdDebugger = /** @class */ (function () {
     function CmdDebugger() {
@@ -709,9 +708,9 @@ var CmdDelBlankRow = /** @class */ (function () {
 var CmdRemoveBlankRows = /** @class */ (function () {
     function CmdRemoveBlankRows(table) {
         this.table = table;
-        this.cmdMacro = new CommandMacro();
     }
     CmdRemoveBlankRows.prototype.execute = function () {
+        this.cmdMacro = new CommandMacro();
         var trs = this.table.getRows();
         for (var i = 0; i < trs.length; i++) {
             if (trs[i].getTds().length === 0) {
@@ -736,7 +735,7 @@ var CmdAddRow = /** @class */ (function () {
     }
     CmdAddRow.prototype.execute = function () {
         var _this = this;
-        this.cmdMacro = new CommandMacro([]);
+        this.cmdMacro = new CommandMacro();
         var trs = this.table.getRows();
         if (this.refRowIdx < 0 || this.refRowIdx >= trs.length) {
             log_1.default.error('CmdAddRow', "Invalid refRowIdx: " + this.refRowIdx);
@@ -760,7 +759,10 @@ var CmdAddRow = /** @class */ (function () {
             var relTdRowRange = relTd.getRowRange();
             // 如果单元格跨行，向下增加行时不用加单元格，但需要把单元格的跨行+1
             if (relTdRowRange[0] === relTdRowRange[1] || this.above) {
-                var tmpTd = new table_1.Td([targetRowIdx, targetRowIdx], [relTdColRange[0], relTdColRange[1]]);
+                var tmpTd = this.table.createCell({
+                    rowRange: [targetRowIdx, targetRowIdx],
+                    colRange: [relTdColRange[0], relTdColRange[1]]
+                });
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             }
             else {
@@ -811,10 +813,10 @@ var CmdDelRow = /** @class */ (function () {
     function CmdDelRow(table, rowIdx) {
         this.table = table;
         this.rowIdx = rowIdx;
-        this.cmdMacro = new CommandMacro();
     }
     CmdDelRow.prototype.execute = function () {
         var _this = this;
+        this.cmdMacro = new CommandMacro();
         var tr = this.table.getRowByIndex(this.rowIdx);
         if (!tr) {
             return false;
@@ -839,9 +841,9 @@ var CmdAddColumn = /** @class */ (function () {
         this.table = table;
         this.refColIdx = refColIdx;
         this.left = left;
-        this.cmdMacro = new CommandMacro();
     }
     CmdAddColumn.prototype.execute = function () {
+        this.cmdMacro = new CommandMacro();
         this.cmdMacro.addCommand(new CmdAddColHeader(this.table, this.left ? this.refColIdx : this.refColIdx + 1));
         var colCount = this.table.getColCount();
         var trs = this.table.getRows();
@@ -870,7 +872,10 @@ var CmdAddColumn = /** @class */ (function () {
                         // 插入不跨列的单元格
                         var tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
                         this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
-                        var tmpTd = new table_1.Td([i, i], [tmpColIdx, tmpColIdx]);
+                        var tmpTd = this.table.createCell({
+                            rowRange: [i, i],
+                            colRange: [tmpColIdx, tmpColIdx]
+                        });
                         this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
                     }
                     break;
@@ -904,10 +909,10 @@ var CmdDelColumn = /** @class */ (function () {
     function CmdDelColumn(table, colIdx) {
         this.table = table;
         this.colIdx = colIdx;
-        this.cmdMacro = new CommandMacro();
     }
     CmdDelColumn.prototype.execute = function () {
         var _this = this;
+        this.cmdMacro = new CommandMacro();
         this.cmdMacro.addCommand(new CmdDelColHeader(this.table, this.colIdx));
         var firstTr = this.table.getRowByIndex(0);
         var firstTd = firstTr.getTdByColIndex(this.colIdx);
@@ -1065,18 +1070,19 @@ var CmdMergeCells = /** @class */ (function () {
         this.table = table;
         this.rowRange = rowRange;
         this.colRange = colRange;
-        this.cmdMacro = new CommandMacro();
     }
     CmdMergeCells.prototype.execute = function () {
         var _this = this;
+        this.cmdMacro = new CommandMacro();
         var rowRange = this.rowRange;
         var colRange = this.colRange;
         var trs = this.table.getRows();
+        var totalColCount = this.table.getColCount();
         if (rowRange[0] < 0 || rowRange[0] >= trs.length || rowRange[1] < 0 || rowRange[1] >= trs.length || rowRange[0] > rowRange[1]) {
             log_1.default.error('Table.mergeCells', "Invalid rowRange: " + this.rowRange);
             return false;
         }
-        if (colRange[0] < 0 || colRange[0] >= trs.length || colRange[1] < 0 || colRange[1] >= trs.length || colRange[0] > colRange[1]) {
+        if (colRange[0] < 0 || colRange[0] >= totalColCount || colRange[1] < 0 || colRange[1] >= totalColCount || colRange[0] > colRange[1]) {
             log_1.default.error('Table.mergeCells', "Invalid colRange: " + this.colRange);
             return false;
         }
@@ -1138,8 +1144,16 @@ var CmdMergeCells = /** @class */ (function () {
                 return r + td.getContent();
             }, '');
         }
-        var tdMerged = new table_1.Td(rowRange, colRange, content);
+        var tdMerged = this.table.createCell({
+            rowRange: rowRange,
+            colRange: colRange,
+            content: content
+        });
         this.cmdMacro.addCommand(new CmdAddCell(this.table, tdMerged), new CmdRemoveBlankRows(this.table));
+        // 如果跨n列合并的单元格上下的所有单元格都横跨该单元格的横向范围，就把这些单元格的跨列-(n - 1)
+        if (colRange[0] != colRange[1]) {
+            this.cmdMacro.addCommand(new CmdShrinkColumns(this.table, colRange));
+        }
         return this.cmdMacro.execute();
     };
     CmdMergeCells.prototype.undo = function () {
@@ -1148,6 +1162,56 @@ var CmdMergeCells = /** @class */ (function () {
     return CmdMergeCells;
 }());
 exports.CmdMergeCells = CmdMergeCells;
+var CmdShrinkColumns = /** @class */ (function () {
+    function CmdShrinkColumns(table, colRange) {
+        this.table = table;
+        this.colRange = colRange;
+    }
+    CmdShrinkColumns.prototype.execute = function () {
+        var _a;
+        this.cmdMacro = new CommandMacro();
+        var trs = this.table.getRows();
+        var intersectRanges = this.table.getIntersectColRanges(this.colRange, 1);
+        // 对交集列表从右到左进行遍历，避免计算上一次命令导致的偏移
+        for (var i = intersectRanges.length - 1; i >= 0; i--) {
+            var cmdList = [];
+            var insRange = intersectRanges[i];
+            var insRangeCount = insRange[1] - insRange[0] + 1;
+            for (var j = 0; j < trs.length; j++) {
+                var tds = trs[j].getTds();
+                var holeStartIdx = 0;
+                for (var z = 0; z < tds.length; z++) {
+                    var colRange = tds[z].getColRange();
+                    if (colRange[0] <= insRange[0] && colRange[1] >= insRange[1]) {
+                        // 在单元格里（因为获取交集时的冗余参数设置为1，因此肯定比交集大），就可以进行缩减
+                        var tmpColIdxAfterShrink = colRange[0] + (colRange[1] - colRange[0]) - (insRange[1] - insRange[0]) - 1;
+                        cmdList.push(new CmdSetCellColRange(this.table, j, colRange[0], [colRange[0], tmpColIdxAfterShrink]));
+                        if (z !== tds.length - 1) {
+                            // 把后面的单元格往左移动
+                            cmdList.push(new CmdMoveCol(this.table, j, tds[z + 1].getColRange()[0], -insRangeCount));
+                        }
+                        break;
+                    }
+                    else if (holeStartIdx <= insRange[0] && colRange[0] > insRange[1]) {
+                        // 在前面的空洞里（交集不会占据多个连续的空洞），就把后面的单元格往左移动
+                        cmdList.push(new CmdMoveCol(this.table, j, colRange[0], -insRangeCount));
+                        break;
+                    }
+                    // 交集在最后的空洞里不需要做任何事
+                    holeStartIdx = colRange[1] + 1;
+                }
+            }
+            if (cmdList.length > 0) {
+                (_a = this.cmdMacro).addCommand.apply(_a, cmdList);
+            }
+        }
+        return this.cmdMacro.execute();
+    };
+    CmdShrinkColumns.prototype.undo = function () {
+        return this.cmdMacro.undo();
+    };
+    return CmdShrinkColumns;
+}());
 var CmdSplitCell = /** @class */ (function () {
     function CmdSplitCell(table, rowIdx, colIdx, rowCount, colCount) {
         this.table = table;
@@ -1155,9 +1219,9 @@ var CmdSplitCell = /** @class */ (function () {
         this.colIdx = colIdx;
         this.rowCount = rowCount;
         this.colCount = colCount;
-        this.cmdMacro = new CommandMacro();
     }
     CmdSplitCell.prototype.execute = function () {
+        this.cmdMacro = new CommandMacro();
         var trs = this.table.getRows();
         if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
             log_1.default.error('CmdSplitCell', "Invalid rowIdx: " + this.rowIdx);
@@ -1215,7 +1279,10 @@ var CmdSplitCell = /** @class */ (function () {
         this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, originStartRowIdx, originStartColIdx, [originStartRowIdx, originStartRowIdx + rowStep - 1]));
         // 插入单元格到被拆分的单元格中
         for (var i = originStartRowIdx + rowStep; i < endRowIdxAfterSplit + 1; i += rowStep) {
-            var tmpTd = new table_1.Td([i, i + rowStep - 1], [originStartColIdx, originEndColIdx]);
+            var tmpTd = this.table.createCell({
+                rowRange: [i, i + rowStep - 1],
+                colRange: [originStartColIdx, originEndColIdx]
+            });
             this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
         }
         // 修改行后的末行索引
@@ -1249,7 +1316,10 @@ var CmdSplitCell = /** @class */ (function () {
             this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
             // 插入新增的单元格
             for (var j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
-                var tmpTd = new table_1.Td([i, i + rowStep - 1], [j, j + colStep - 1]);
+                var tmpTd = this.table.createCell({
+                    rowRange: [i, i + rowStep - 1],
+                    colRange: [j, j + colStep - 1]
+                });
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             }
         }
@@ -1349,7 +1419,7 @@ var command_1 = __webpack_require__(/*! ./command */ "./src/command.ts");
 __webpack_require__(/*! ../style/editor.scss */ "./style/editor.scss");
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
 var event_1 = __webpack_require__(/*! ./event */ "./src/event.ts");
-var NOT_EDITABLE_MSG = 'table can not be edit';
+var NOT_EDITABLE_MSG = 'Table can not be edit';
 var TableEditor = /** @class */ (function () {
     function TableEditor(options) {
         var _this = this;
@@ -1365,6 +1435,7 @@ var TableEditor = /** @class */ (function () {
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
             cellFocusedBg: options.cellFocusedBg || '',
+            borderColor: options.borderColor || '',
             debug: this.debug,
             onCellFocus: function (v) {
                 _this.eventHandler.trigger(event_1.EDITOR_EVENTS.CELL_FOCUS, v);
@@ -1485,7 +1556,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Set cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") \"" + content + "\"");
+            log_1.log.info("Set cell (" + rowIdx + ", " + colIdx + ") \"" + content + "\"");
         }
         var cmd = new command_1.CmdSetCellContent(this.table, rowIdx, colIdx, content);
         if (cmd.execute()) {
@@ -1756,19 +1827,19 @@ function tdRangeToString(range) {
 }
 exports.tdRangeToString = tdRangeToString;
 var Td = /** @class */ (function () {
-    function Td(rowRange, colRange, content, props) {
+    function Td(options) {
         var _this = this;
-        this.content = content || '';
+        this.content = options.content || '';
         this.elem = document.createElement('td');
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
-        this.ccElem.innerText = this.content;
+        this.ccElem.innerHTML = this.content;
         this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
-        this.setRowRange(rowRange);
-        this.setColRange(colRange);
-        this.props = props || {};
+        this.setRowRange(options.rowRange);
+        this.setColRange(options.colRange);
+        this.props = options.props || {};
         if (this.props.style) {
             Object.keys(this.props.style).forEach(function (k) {
                 _this.elem.style[k] = _this.props.style[k];
@@ -1809,7 +1880,7 @@ var Td = /** @class */ (function () {
         if (updateElement === void 0) { updateElement = true; }
         this.content = content;
         if (updateElement) {
-            this.elem.innerText = content;
+            this.ccElem.innerHTML = content;
         }
     };
     Td.prototype.setEditable = function (editable) {
@@ -2031,6 +2102,7 @@ var Table = /** @class */ (function () {
         this.editable = options.editable;
         this.resizeable = options.resizeable;
         this.cellFocusedBg = options.cellFocusedBg;
+        this.borderColor = options.borderColor;
         this.debug = options.debug;
         this.onCellFocus = options.onCellFocus;
         this.onCellBlur = options.onCellBlur;
@@ -2062,7 +2134,16 @@ var Table = /** @class */ (function () {
                         }
                     }
                     var tr = _this.trs[rowRange[0]];
-                    tr.addTd(new Td(rowRange, colRange, tdData.content, { style: tdData.style || {} }));
+                    var style = {};
+                    if (_this.borderColor) {
+                        style['borderColor'] = _this.borderColor;
+                    }
+                    tr.addTd(_this.createCell({
+                        rowRange: rowRange,
+                        colRange: colRange,
+                        content: tdData.content,
+                        props: { style: style }
+                    }));
                     if ('width' in tdData) {
                         cwc_1.add(colRange, tdData.width);
                     }
@@ -2081,7 +2162,16 @@ var Table = /** @class */ (function () {
                         if ('width' in td) {
                             cwc_1.add(td.col, td.width);
                         }
-                        return new Td(td.row, td.col, td.content, { style: td.style || {} });
+                        var style = {};
+                        if (_this.borderColor) {
+                            style['borderColor'] = _this.borderColor;
+                        }
+                        return _this.createCell({
+                            rowRange: td.row,
+                            colRange: td.col,
+                            content: td.content,
+                            props: { style: style }
+                        });
                     });
                     var tr = new Tr(tds);
                     _this.tbodyElem.appendChild(tr.getElem());
@@ -2120,7 +2210,7 @@ var Table = /** @class */ (function () {
             var target = e.target;
             if (_this.eventTargetIsCellContent(e)) {
                 var td = ep[1].td;
-                td.setContent(target['innerText'], false);
+                td.setContent(target['innerHTML'], false);
             }
         });
         var RESIZE_OFFSET = 5;
@@ -2221,7 +2311,7 @@ var Table = /** @class */ (function () {
         });
         this.elem.addEventListener('focusin', function (e) {
             if (_this.eventTargetIsCellContent(e)) {
-                e.target['style'].background = _this.cellFocusedBg;
+                e.target['parentElement']['style'].background = _this.cellFocusedBg;
                 var td = e.target['parentElement'].td;
                 var rowRange = td.getRowRange();
                 var colRange = td.getColRange();
@@ -2230,13 +2320,27 @@ var Table = /** @class */ (function () {
         });
         this.elem.addEventListener('focusout', function (e) {
             if (_this.eventTargetIsCellContent(e)) {
-                e.target['style'].background = '';
+                e.target['parentElement']['style'].background = '';
                 var td = e.target['parentElement'].td;
                 var rowRange = td.getRowRange();
                 var colRange = td.getColRange();
                 _this.onCellBlur(new event_1.TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
             }
         });
+    };
+    Table.prototype.createCell = function (options) {
+        if (!options.props) {
+            options.props = {};
+        }
+        if (!options.props.style) {
+            options.props.style = {};
+        }
+        if (this.borderColor) {
+            options.props.style['borderColor'] = this.borderColor;
+        }
+        var td = new Td(options);
+        td.setEditable(this.editable);
+        return td;
     };
     Table.prototype.eventTargetIsCellContent = function (e) {
         var ep = dom_1.getEventPath(e);
@@ -2376,6 +2480,9 @@ var Table = /** @class */ (function () {
                 var tdElem = tdElems[j];
                 var rowRange = td.getRowRange();
                 var colRange = td.getColRange();
+                if (rowRange[0] < 0 || rowRange[1] < 0 || colRange[0] < 0 || colRange[1] < 0) {
+                    return "Td data error. rowIndex: " + i + ", colIndex: " + j;
+                }
                 if (rowRange[0] !== i) {
                     return "Row range not match. rowIndex: " + i;
                 }
@@ -2387,7 +2494,7 @@ var Table = /** @class */ (function () {
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return "Rowspan not match. rowIndex: " + i + ", colIndex: " + j;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerText']) {
+                if (td.getContent() !== tdElem.firstChild['innerHTML']) {
                     return "Td content not match. rowIndex: " + i + ", colIndex: " + j;
                 }
             }
@@ -2429,6 +2536,67 @@ var Table = /** @class */ (function () {
                 td.getElem().contentEditable = edt;
             });
         });
+    };
+    // 单元格的跨列交集
+    Table.prototype.getIntersectColRanges = function (colRange, redundancy) {
+        var _this = this;
+        if (redundancy === void 0) { redundancy = 0; }
+        if (colRange[0] >= colRange[1]) {
+            return [];
+        }
+        var startIdx = colRange[0];
+        var endIdx = colRange[1] + 1;
+        // 把result当作一个数轴，设置区间colRange[0] ~ colRange[1] + 1，把每行中列的点（索引）画（存）到数轴上
+        // 最后把每2个点作为区间取出来，然后去掉不满足冗余条件的区间
+        var axis = [startIdx, endIdx];
+        this.trs.forEach(function (tr, rowIdx) {
+            var tds = tr.getTds();
+            var holeStartIdx = 0;
+            for (var i = 0; i < tds.length; i++) {
+                var tdColRange = tds[i].getColRange();
+                var points = new Set();
+                if (holeStartIdx < tdColRange[0]) {
+                    // 把空洞中所有的点取出来
+                    var holes = _this.getTdsCrossRow(rowIdx, holeStartIdx, tdColRange[0] - 1);
+                    for (var j = 0; j < holes.length; j++) {
+                        var tmpHoleTdColRange = holes[j].getColRange();
+                        if (tmpHoleTdColRange[0] > startIdx && tmpHoleTdColRange[0] < endIdx) {
+                            points.add(tmpHoleTdColRange[0]);
+                        }
+                        if (tmpHoleTdColRange[1] + 1 > startIdx && tmpHoleTdColRange[1] + 1 < endIdx) {
+                            points.add(tmpHoleTdColRange[1] + 1);
+                        }
+                    }
+                }
+                if (tdColRange[0] + 1 >= endIdx) {
+                    break;
+                }
+                if (tdColRange[0] > startIdx && tdColRange[0] < endIdx) {
+                    points.add(tdColRange[0]);
+                }
+                if (tdColRange[1] + 1 > startIdx && tdColRange[1] + 1 < endIdx) {
+                    points.add(tdColRange[1] + 1);
+                }
+                holeStartIdx = tdColRange[1] + 1;
+                if (points.size > 0) {
+                    points.forEach(function (v) {
+                        for (var i_2 = 0; i_2 < axis.length - 1; i_2++) {
+                            if (v > axis[i_2] && v < axis[i_2 + 1]) {
+                                axis.splice(i_2 + 1, 0, v);
+                                break;
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        var result = [];
+        for (var i = 0; i < axis.length - 1; i++) {
+            if (axis[i + 1] - axis[i] > redundancy) {
+                result.push([axis[i] + redundancy, axis[i + 1] - 1]);
+            }
+        }
+        return result;
     };
     Table.prototype.destroy = function () {
         this.elem.remove();

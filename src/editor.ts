@@ -177,7 +177,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Set cell (${rowIdx + 1}, ${colIdx + 1}) "${content}"`);
+            log.info(`Set cell (${rowIdx}, ${colIdx}) "${content}"`);
         }
         const cmd = new CmdSetCellContent(this.table, rowIdx, colIdx, content);
         if (cmd.execute()) {

@@ -54,7 +54,7 @@ class Td {
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
-        this.ccElem.innerText = this.content;
+        this.ccElem.innerHTML = this.content;
         this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
         this.setRowRange(options.rowRange);
@@ -104,7 +104,7 @@ class Td {
     setContent(content: string, updateElement: boolean = true) {
         this.content = content;
         if (updateElement) {
-            this.elem.innerText = content;
+            this.ccElem.innerHTML = content;
         }
     }
 
@@ -409,7 +409,7 @@ class Table {
                     if (this.borderColor) {
                         style['borderColor'] = this.borderColor;
                     }
-                    tr.addTd(this.createTd({
+                    tr.addTd(this.createCell({
                         rowRange,
                         colRange,
                         content: tdData.content,
@@ -436,7 +436,7 @@ class Table {
                         if (this.borderColor) {
                             style['borderColor'] = this.borderColor;
                         }
-                        return this.createTd({
+                        return this.createCell({
                             rowRange: td.row,
                             colRange: td.col,
                             content: td.content,
@@ -479,7 +479,7 @@ class Table {
             const target = e.target;
             if (this.eventTargetIsCellContent(e)) {
                 const td: Td = ep[1].td;
-                td.setContent(target['innerText'], false);
+                td.setContent(target['innerHTML'], false);
             }
         });
 
@@ -581,7 +581,7 @@ class Table {
 
         this.elem.addEventListener('focusin', (e) => {
             if (this.eventTargetIsCellContent(e)) {
-                e.target['style'].background = this.cellFocusedBg;
+                e.target['parentElement']['style'].background = this.cellFocusedBg;
                 const td: Td = e.target['parentElement'].td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
@@ -591,7 +591,7 @@ class Table {
 
         this.elem.addEventListener('focusout', (e) => {
             if (this.eventTargetIsCellContent(e)) {
-                e.target['style'].background = '';
+                e.target['parentElement']['style'].background = '';
                 const td: Td = e.target['parentElement'].td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
@@ -600,7 +600,7 @@ class Table {
         });
     }
 
-    createTd(options: tdOptions): Td {
+    createCell(options: tdOptions): Td {
         if (!options.props) {
             options.props = {};
         }
@@ -610,7 +610,9 @@ class Table {
         if (this.borderColor) {
             options.props.style['borderColor'] = this.borderColor;
         }
-        return new Td(options);
+        const td = new Td(options);
+        td.setEditable(this.editable);
+        return td;
     }
 
     private eventTargetIsCellContent(e) {
@@ -765,6 +767,9 @@ class Table {
                 const tdElem = tdElems[j];
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
+                if (rowRange[0] < 0 || rowRange[1] < 0 || colRange[0] < 0 || colRange[1] < 0) {
+                    return `Td data error. rowIndex: ${i}, colIndex: ${j}`;
+                }
                 if (rowRange[0] !== i) {
                     return `Row range not match. rowIndex: ${i}`;
                 }
@@ -776,7 +781,7 @@ class Table {
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return `Rowspan not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerText']) {
+                if (td.getContent() !== tdElem.firstChild['innerHTML']) {
                     return `Td content not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
             }
@@ -820,6 +825,66 @@ class Table {
                 td.getElem().contentEditable = edt;
             });
         });
+    }
+
+    // 单元格的跨列交集
+    getIntersectColRanges(colRange: TdRange, redundancy: number = 0): Array<TdRange> {
+        if (colRange[0] >= colRange[1]) {
+            return [];
+        }
+        const startIdx =  colRange[0];
+        const endIdx = colRange[1] + 1;
+        // 把result当作一个数轴，设置区间colRange[0] ~ colRange[1] + 1，把每行中列的点（索引）画（存）到数轴上
+        // 最后把每2个点作为区间取出来，然后去掉不满足冗余条件的区间
+        const axis = [startIdx, endIdx];
+        this.trs.forEach((tr, rowIdx) => {
+            const tds = tr.getTds();
+            let holeStartIdx = 0;
+            for (let i = 0; i < tds.length; i++) {
+                const tdColRange = tds[i].getColRange();
+                const points = new Set();
+                if (holeStartIdx < tdColRange[0]) {
+                    // 把空洞中所有的点取出来
+                    const holes = this.getTdsCrossRow(rowIdx, holeStartIdx, tdColRange[0] - 1);
+                    for (let j = 0; j < holes.length; j++) {
+                        const tmpHoleTdColRange = holes[j].getColRange();
+                        if (tmpHoleTdColRange[0] > startIdx && tmpHoleTdColRange[0] < endIdx) {
+                            points.add(tmpHoleTdColRange[0]);
+                        }
+                        if (tmpHoleTdColRange[1] + 1 > startIdx && tmpHoleTdColRange[1] + 1 < endIdx) {
+                            points.add(tmpHoleTdColRange[1] + 1);
+                        }
+                    }
+                }
+                if (tdColRange[0] + 1 >= endIdx) {
+                    break;
+                }
+                if (tdColRange[0] > startIdx && tdColRange[0] < endIdx) {
+                    points.add(tdColRange[0]);
+                }
+                if (tdColRange[1] + 1 > startIdx && tdColRange[1] + 1 < endIdx) {
+                    points.add(tdColRange[1] + 1);
+                }
+                holeStartIdx = tdColRange[1] + 1;
+                if (points.size > 0) {
+                    points.forEach((v) => {
+                        for (let i = 0; i < axis.length - 1; i++) {
+                            if (v > axis[i] && v < axis[i + 1]) {
+                                axis.splice(i + 1, 0, <number>v);
+                                break;
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        const result = [];
+        for (let i = 0; i < axis.length - 1; i++) {
+            if (axis[i + 1] - axis[i] > redundancy) {
+                result.push([axis[i] + redundancy, axis[i + 1] - 1]);
+            }
+        }
+        return result;
     }
 
     destroy() {

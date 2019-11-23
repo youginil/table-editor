@@ -310,7 +310,7 @@ export class CmdAddRow implements Command {
             const relTdRowRange = relTd.getRowRange();
             // 如果单元格跨行，向下增加行时不用加单元格，但需要把单元格的跨行+1
             if (relTdRowRange[0] === relTdRowRange[1] || this.above) {
-                const tmpTd = this.table.createTd({
+                const tmpTd = this.table.createCell({
                     rowRange: [targetRowIdx, targetRowIdx],
                     colRange: [relTdColRange[0], relTdColRange[1]]
                 });
@@ -433,7 +433,7 @@ export class CmdAddColumn implements Command {
                         // 插入不跨列的单元格
                         const tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
                         this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
-                        const tmpTd = this.table.createTd({
+                        const tmpTd = this.table.createCell({
                             rowRange: [i, i],
                             colRange: [tmpColIdx, tmpColIdx]
                         });
@@ -674,11 +674,12 @@ export class CmdMergeCells implements Command {
         const rowRange = this.rowRange;
         const colRange = this.colRange;
         const trs = this.table.getRows();
+        const totalColCount =  this.table.getColCount();
         if (rowRange[0] < 0 || rowRange[0] >= trs.length || rowRange[1] < 0 || rowRange[1] >= trs.length || rowRange[0] > rowRange[1]) {
             log.error('Table.mergeCells', `Invalid rowRange: ${this.rowRange}`);
             return false;
         }
-        if (colRange[0] < 0 || colRange[0] >= trs.length || colRange[1] < 0 || colRange[1] >= trs.length || colRange[0] > colRange[1]) {
+        if (colRange[0] < 0 || colRange[0] >= totalColCount || colRange[1] < 0 || colRange[1] >= totalColCount || colRange[0] > colRange[1]) {
             log.error('Table.mergeCells', `Invalid colRange: ${this.colRange}`);
             return false;
         }
@@ -740,12 +741,71 @@ export class CmdMergeCells implements Command {
                 return r + td.getContent();
             }, '');
         }
-        const tdMerged = this.table.createTd({
+        const tdMerged = this.table.createCell({
             rowRange,
             colRange,
             content
         });
         this.cmdMacro.addCommand(new CmdAddCell(this.table, tdMerged), new CmdRemoveBlankRows(this.table));
+        // 如果跨n列合并的单元格上下的所有单元格都横跨该单元格的横向范围，就把这些单元格的跨列-(n - 1)
+        if (colRange[0] != colRange[1]) {
+            this.cmdMacro.addCommand(new CmdShrinkColumns(this.table, colRange));
+        }
+        return this.cmdMacro.execute();
+    }
+
+    undo(): boolean {
+        return this.cmdMacro.undo();
+    }
+}
+
+class CmdShrinkColumns implements Command {
+    private readonly table: Table;
+    private readonly colRange: TdRange;
+    private cmdMacro: CommandMacro;
+
+    constructor(table: Table, colRange: TdRange) {
+        this.table = table;
+        this.colRange = colRange;
+    }
+
+    execute(): boolean {
+        this.cmdMacro = new CommandMacro();
+        const trs = this.table.getRows();
+        const intersectRanges = this.table.getIntersectColRanges(this.colRange, 1);
+
+        // 对交集列表从右到左进行遍历，避免计算上一次命令导致的偏移
+        for (let i = intersectRanges.length - 1; i >= 0; i--) {
+            const cmdList = [];
+            const insRange = intersectRanges[i];
+            const insRangeCount = insRange[1] - insRange[0] + 1;
+            for (let j = 0; j < trs.length; j++) {
+                const tds = trs[j].getTds();
+                let holeStartIdx = 0;
+                for (let z = 0; z < tds.length; z++) {
+                    const colRange = tds[z].getColRange();
+                    if (colRange[0] <= insRange[0] && colRange[1] >= insRange[1]) {
+                        // 在单元格里（因为获取交集时的冗余参数设置为1，因此肯定比交集大），就可以进行缩减
+                        const tmpColIdxAfterShrink = colRange[0] + (colRange[1] - colRange[0]) - (insRange[1] - insRange[0]) - 1;
+                        cmdList.push(new CmdSetCellColRange(this.table, j, colRange[0], [colRange[0], tmpColIdxAfterShrink]));
+                        if (z !== tds.length - 1) {
+                            // 把后面的单元格往左移动
+                            cmdList.push(new CmdMoveCol(this.table, j, tds[z + 1].getColRange()[0], -insRangeCount));
+                        }
+                        break;
+                    } else if (holeStartIdx <= insRange[0] && colRange[0] > insRange[1]) {
+                        // 在前面的空洞里（交集不会占据多个连续的空洞），就把后面的单元格往左移动
+                        cmdList.push(new CmdMoveCol(this.table, j, colRange[0], -insRangeCount));
+                        break;
+                    }
+                    // 交集在最后的空洞里不需要做任何事
+                    holeStartIdx = colRange[1] + 1;
+                }
+            }
+            if (cmdList.length > 0) {
+                this.cmdMacro.addCommand(...cmdList);
+            }
+        }
         return this.cmdMacro.execute();
     }
 
@@ -829,7 +889,7 @@ export class CmdSplitCell implements Command {
         this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, originStartRowIdx, originStartColIdx, [originStartRowIdx, originStartRowIdx + rowStep - 1]));
         // 插入单元格到被拆分的单元格中
         for (let i = originStartRowIdx + rowStep; i < endRowIdxAfterSplit + 1; i += rowStep) {
-            const tmpTd = this.table.createTd({
+            const tmpTd = this.table.createCell({
                 rowRange: [i, i + rowStep - 1],
                 colRange: [originStartColIdx, originEndColIdx]
             });
@@ -865,7 +925,7 @@ export class CmdSplitCell implements Command {
             this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
             // 插入新增的单元格
             for (let j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
-                const tmpTd = this.table.createTd({
+                const tmpTd = this.table.createCell({
                     rowRange: [i, i + rowStep - 1],
                     colRange: [j, j + colStep - 1]
                 });
