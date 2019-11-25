@@ -1,3 +1,4 @@
+const pkg = require('../package.json');
 import {TableData, TableCells, Table, TdRange} from "./table";
 import {
     Command,
@@ -27,7 +28,7 @@ type EditorOptions = {
 const NOT_EDITABLE_MSG = 'Table can not be edit';
 
 export class TableEditor {
-    static version = '0.0.1';
+    static version = pkg.version;
     private elem: HTMLElement;
     private readonly table: Table;
     private cmdHistory: CommandHistory;
@@ -38,7 +39,7 @@ export class TableEditor {
     constructor(options: EditorOptions) {
         this.elem = options.elem;
         this.elem.innerHTML = '';
-        const className = `table-editor-${TableEditor.version.replace(/\./g, '-')}`;
+        const className = `table-editor-hahaha`;
         this.editable = 'editable' in options ? options.editable : true;
         this.eventHandler = new EditorEventHandler();
         this.table = new Table({

@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".table-editor-0-0-1 {\n  display: inline-block;\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-0-0-1 * {\n    box-sizing: border-box; }\n  .table-editor-0-0-1 > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-0-0-1 > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
+exports.push([module.i, ".table-editor-hahaha {\n  display: inline-block;\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-hahaha * {\n    box-sizing: border-box; }\n  .table-editor-hahaha > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-hahaha > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
 
 
 /***/ }),
@@ -501,6 +501,17 @@ module.exports = function (list, options) {
     }
   };
 };
+
+/***/ }),
+
+/***/ "./package.json":
+/*!**********************!*\
+  !*** ./package.json ***!
+  \**********************/
+/*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, devDependencies, default */
+/***/ (function(module) {
+
+module.exports = JSON.parse("{\"name\":\"web-table-editor\",\"version\":\"1.0.0\",\"description\":\"edit table structure and content\",\"main\":\"index.js\",\"scripts\":{\"build\":\"./node_modules/.bin/webpack\",\"dev\":\"./node_modules/.bin/webpack-dev-server --inline\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/yinliguo/table-editor\"},\"keywords\":[\"table\",\"editor\"],\"author\":\"yinliguo\",\"license\":\"ISC\",\"devDependencies\":{\"css-loader\":\"^3.2.0\",\"node-sass\":\"^4.13.0\",\"sass-loader\":\"^8.0.0\",\"style-loader\":\"^1.0.0\",\"ts-loader\":\"^6.2.1\",\"typescript\":\"^3.7.2\",\"webpack\":\"^4.41.2\",\"webpack-cli\":\"^3.3.10\",\"webpack-dev-server\":\"^3.9.0\"}}");
 
 /***/ }),
 
@@ -1414,6 +1425,7 @@ exports.getEventPath = getEventPath;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var pkg = __webpack_require__(/*! ../package.json */ "./package.json");
 var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
 var command_1 = __webpack_require__(/*! ./command */ "./src/command.ts");
 __webpack_require__(/*! ../style/editor.scss */ "./style/editor.scss");
@@ -1425,7 +1437,7 @@ var TableEditor = /** @class */ (function () {
         var _this = this;
         this.elem = options.elem;
         this.elem.innerHTML = '';
-        var className = "table-editor-" + TableEditor.version.replace(/\./g, '-');
+        var className = "table-editor-hahaha";
         this.editable = 'editable' in options ? options.editable : true;
         this.eventHandler = new event_1.EditorEventHandler();
         this.table = new table_1.Table({
@@ -1615,7 +1627,7 @@ var TableEditor = /** @class */ (function () {
     TableEditor.prototype.destroy = function () {
         this.table.destroy();
     };
-    TableEditor.version = '0.0.1';
+    TableEditor.version = pkg.version;
     return TableEditor;
 }());
 exports.TableEditor = TableEditor;
