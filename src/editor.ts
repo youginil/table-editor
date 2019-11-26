@@ -66,7 +66,7 @@ export class TableEditor {
         this.debug = 'debug' in options ? !!options.debug : false;
     }
 
-    addRow(rowIdx: number, above: boolean): void {
+    addRow(rowIdx: number, above: boolean) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -83,7 +83,7 @@ export class TableEditor {
         }
     }
 
-    delRow(rowIdx: number): void {
+    delRow(rowIdx: number) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -100,7 +100,7 @@ export class TableEditor {
         }
     }
 
-    addColumn(colIdx: number, left: boolean): void {
+    addColumn(colIdx: number, left: boolean) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -117,7 +117,7 @@ export class TableEditor {
         }
     }
 
-    delColumn(colIdx: number): void {
+    delColumn(colIdx: number) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -134,7 +134,7 @@ export class TableEditor {
         }
     }
 
-    mergeCells(rowRange: TdRange, colRange: TdRange): void {
+    mergeCells(rowRange: TdRange, colRange: TdRange) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -151,7 +151,7 @@ export class TableEditor {
         }
     }
 
-    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number): void {
+    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -172,7 +172,7 @@ export class TableEditor {
         return this.table.getCellContent(rowIdx, colIdx);
     }
 
-    setCellContent(rowIdx: number, colIdx: number, content: string): void {
+    setCellContent(rowIdx: number, colIdx: number, content: string) {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -189,7 +189,7 @@ export class TableEditor {
         }
     }
 
-    undo(): void {
+    undo() {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -203,7 +203,7 @@ export class TableEditor {
         }
     }
 
-    redo(): void {
+    redo() {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
             return;
@@ -221,16 +221,16 @@ export class TableEditor {
         return this.table.getTableData();
     }
 
-    setEditable(editable: boolean): void {
+    setEditable(editable: boolean) {
         this.editable = !!editable;
         this.table.setEditable(this.editable);
     }
 
-    addEventListener(name: string, handler: Function): void {
+    addEventListener(name: string, handler: Function) {
         this.eventHandler.addHandler(name, handler);
     }
 
-    removeEventListener(name: string, handler: Function): void {
+    removeEventListener(name: string, handler: Function) {
         this.eventHandler.removeHandler(name, handler);
     }
 
@@ -242,7 +242,7 @@ export class TableEditor {
         this.cmdHistory.printStatus();
     }
 
-    destroy(): void {
+    destroy() {
         this.table.destroy();
     }
 }

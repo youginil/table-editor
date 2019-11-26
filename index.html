@@ -179,7 +179,7 @@ var tab;
         var td = tds[j];
         var rowRange = td.td.getRowRange();
         var colRange = td.td.getColRange();
-        var content = rowRange.join(', ') + '<br>' + colRange.join(', ');
+        var content = rowRange.join(', ') + '\n' + colRange.join(', ');
         tab.setCellContent(rowRange[0], colRange[0], content);
       }
     }

@@ -54,7 +54,7 @@ class Td {
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
-        this.ccElem.innerHTML = this.content;
+        this.ccElem.innerText = this.content;
         this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
         this.setRowRange(options.rowRange);
@@ -104,7 +104,7 @@ class Td {
     setContent(content: string, updateElement: boolean = true) {
         this.content = content;
         if (updateElement) {
-            this.ccElem.innerHTML = content;
+            this.ccElem.innerText = content;
         }
     }
 
@@ -479,7 +479,7 @@ class Table {
             const target = e.target;
             if (this.eventTargetIsCellContent(e)) {
                 const td: Td = ep[1].td;
-                td.setContent(target['innerHTML'], false);
+                td.setContent(target['innerText'], false);
             }
         });
 
@@ -781,7 +781,7 @@ class Table {
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return `Rowspan not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerHTML']) {
+                if (td.getContent() !== tdElem.firstChild['innerText']) {
                     return `Td content not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
             }
