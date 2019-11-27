@@ -1183,11 +1183,13 @@ var CmdShrinkColumns = /** @class */ (function () {
         this.cmdMacro = new CommandMacro();
         var trs = this.table.getRows();
         var intersectRanges = this.table.getIntersectColRanges(this.colRange, 1);
+        var colCountShrinked = 0;
         // 对交集列表从右到左进行遍历，避免计算上一次命令导致的偏移
         for (var i = intersectRanges.length - 1; i >= 0; i--) {
             var cmdList = [];
             var insRange = intersectRanges[i];
             var insRangeCount = insRange[1] - insRange[0] + 1;
+            colCountShrinked += insRangeCount;
             for (var j = 0; j < trs.length; j++) {
                 var tds = trs[j].getTds();
                 var holeStartIdx = 0;
@@ -1216,7 +1218,11 @@ var CmdShrinkColumns = /** @class */ (function () {
                 (_a = this.cmdMacro).addCommand.apply(_a, cmdList);
             }
         }
-        return this.cmdMacro.execute();
+        var success = this.cmdMacro.execute();
+        if (success) {
+            this.table.setColCount(this.table.getColCount() - colCountShrinked);
+        }
+        return success;
     };
     CmdShrinkColumns.prototype.undo = function () {
         return this.cmdMacro.undo();
@@ -1335,7 +1341,10 @@ var CmdSplitCell = /** @class */ (function () {
             }
         }
         this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table));
-        return this.cmdMacro.execute();
+        var success = this.cmdMacro.execute();
+        if (success) {
+            this.table.setColCount(this.table.getColCount() + this.colCount - 1);
+        }
     };
     CmdSplitCell.prototype.undo = function () {
         return this.cmdMacro.undo();

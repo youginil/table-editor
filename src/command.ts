@@ -773,12 +773,14 @@ class CmdShrinkColumns implements Command {
         this.cmdMacro = new CommandMacro();
         const trs = this.table.getRows();
         const intersectRanges = this.table.getIntersectColRanges(this.colRange, 1);
+        let colCountShrinked = 0;
 
         // 对交集列表从右到左进行遍历，避免计算上一次命令导致的偏移
         for (let i = intersectRanges.length - 1; i >= 0; i--) {
             const cmdList = [];
             const insRange = intersectRanges[i];
             const insRangeCount = insRange[1] - insRange[0] + 1;
+            colCountShrinked += insRangeCount;
             for (let j = 0; j < trs.length; j++) {
                 const tds = trs[j].getTds();
                 let holeStartIdx = 0;
@@ -806,7 +808,11 @@ class CmdShrinkColumns implements Command {
                 this.cmdMacro.addCommand(...cmdList);
             }
         }
-        return this.cmdMacro.execute();
+        const success = this.cmdMacro.execute();
+        if (success) {
+            this.table.setColCount(this.table.getColCount() - colCountShrinked);
+        }
+        return success;
     }
 
     undo(): boolean {
@@ -933,7 +939,10 @@ export class CmdSplitCell implements Command {
             }
         }
         this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table));
-        return this.cmdMacro.execute();
+        const success = this.cmdMacro.execute();
+        if (success) {
+            this.table.setColCount(this.table.getColCount() + this.colCount - 1);
+        }
     }
 
     undo(): boolean {
