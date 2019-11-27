@@ -856,7 +856,7 @@ export class CmdSplitCell implements Command {
             log.error(`${originRowCount} rows cannot be split into ${this.rowCount} rows`);
             return false;
         }
-        if (this.colCount % originColCount !== 0 && originColCount % this.rowCount !== 0) {
+        if (this.colCount % originColCount !== 0 && originColCount % this.colCount !== 0) {
             log.error(`${originColCount} columns cannot be split into ${this.colCount} columns`);
             return false;
         }
