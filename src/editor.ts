@@ -72,7 +72,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Add one row ${above ? 'above' : 'below'} row: ${rowIdx + 1}`);
+            log.info(`Add one row ${above ? 'above' : 'below'} row: ${rowIdx}`);
         }
         const cmd = new CmdAddRow(this.table, rowIdx, above);
         if (cmd.execute()) {
@@ -89,7 +89,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Delete row ${rowIdx + 1}`);
+            log.info(`Delete row ${rowIdx}`);
         }
         const cmd = new CmdDelRow(this.table, rowIdx);
         if (cmd.execute()) {
@@ -106,7 +106,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Add one column ${left ? 'left' : 'right'} of column ${colIdx + 1}`);
+            log.info(`Add one column ${left ? 'left' : 'right'} of column ${colIdx}`);
         }
         const cmd = new CmdAddColumn(this.table, colIdx, left);
         if (cmd.execute()) {
@@ -123,7 +123,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Delete column ${colIdx + 1}`);
+            log.info(`Delete column ${colIdx}`);
         }
         const cmd = new CmdDelColumn(this.table, colIdx);
         if (cmd.execute()) {
@@ -140,7 +140,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Merge cells. Row: ${rowRange[0] + 1} ~ ${rowRange[1] + 1}, Column: ${colRange[0] + 1} ~ ${colRange[1] + 1}`);
+            log.info(`Merge cells. Row: ${rowRange[0]} ~ ${rowRange[1]}, Column: ${colRange[0]} ~ ${colRange[1]}`);
         }
         const cmd = new CmdMergeCells(this.table, rowRange, colRange);
         if (cmd.execute()) {
@@ -157,7 +157,7 @@ export class TableEditor {
             return;
         }
         if (this.debug) {
-            log.info(`Split cell (${rowIdx + 1}, ${colIdx + 1}) into ${rowCount} rows and ${colCount} columns`);
+            log.info(`Split cell (${rowIdx}, ${colIdx}) into ${rowCount} rows and ${colCount} columns`);
         }
         const cmd = new CmdSplitCell(this.table, rowIdx, colIdx, rowCount, colCount);
         if (cmd.execute()) {

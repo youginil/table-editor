@@ -511,7 +511,7 @@ module.exports = function (list, options) {
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"web-table-editor\",\"version\":\"1.0.0\",\"description\":\"edit table structure and content\",\"main\":\"index.js\",\"scripts\":{\"build\":\"./node_modules/.bin/webpack\",\"dev\":\"./node_modules/.bin/webpack-dev-server --inline\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/yinliguo/table-editor\"},\"keywords\":[\"table\",\"editor\"],\"author\":\"yinliguo\",\"license\":\"ISC\",\"devDependencies\":{\"css-loader\":\"^3.2.0\",\"node-sass\":\"^4.13.0\",\"sass-loader\":\"^8.0.0\",\"style-loader\":\"^1.0.0\",\"ts-loader\":\"^6.2.1\",\"typescript\":\"^3.7.2\",\"webpack\":\"^4.41.2\",\"webpack-cli\":\"^3.3.10\",\"webpack-dev-server\":\"^3.9.0\"}}");
+module.exports = JSON.parse("{\"name\":\"web-table-editor\",\"version\":\"1.0.1\",\"description\":\"edit table structure and content\",\"main\":\"index.js\",\"scripts\":{\"build\":\"./node_modules/.bin/webpack\",\"dev\":\"./node_modules/.bin/webpack-dev-server --inline\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/yinliguo/table-editor\"},\"keywords\":[\"table\",\"editor\"],\"author\":\"yinliguo\",\"license\":\"ISC\",\"devDependencies\":{\"css-loader\":\"^3.2.0\",\"node-sass\":\"^4.13.0\",\"sass-loader\":\"^8.0.0\",\"style-loader\":\"^1.0.0\",\"ts-loader\":\"^6.2.1\",\"typescript\":\"^3.7.2\",\"webpack\":\"^4.41.2\",\"webpack-cli\":\"^3.3.10\",\"webpack-dev-server\":\"^3.9.0\"}}");
 
 /***/ }),
 
@@ -1306,7 +1306,7 @@ var CmdSplitCell = /** @class */ (function () {
             // originStartColIdx = 0 originEndColIdx = 1 cPerCol = 2
             var cPerCol = this.colCount / originColCount;
             colStep = 1;
-            endColIdxAfterSplit = originStartColIdx + originColCount - 1;
+            endColIdxAfterSplit = originStartColIdx + this.colCount - 1;
             var blankColsInc = cPerCol - 1;
             // 每行在被拆分单元格（包含）及后面的单元格进行扩展
             for (var i = originStartColIdx; i < originEndColIdx + 1; i++) {
@@ -1326,7 +1326,7 @@ var CmdSplitCell = /** @class */ (function () {
             // 缩小被拆分的单元格
             this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
             // 插入新增的单元格
-            for (var j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
+            for (var j = originStartColIdx + colStep; j < endColIdxAfterSplit + 1; j += colStep) {
                 var tmpTd = this.table.createCell({
                     rowRange: [i, i + rowStep - 1],
                     colRange: [j, j + colStep - 1]
@@ -1469,7 +1469,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Add one row " + (above ? 'above' : 'below') + " row: " + (rowIdx + 1));
+            log_1.log.info("Add one row " + (above ? 'above' : 'below') + " row: " + rowIdx);
         }
         var cmd = new command_1.CmdAddRow(this.table, rowIdx, above);
         if (cmd.execute()) {
@@ -1485,7 +1485,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Delete row " + (rowIdx + 1));
+            log_1.log.info("Delete row " + rowIdx);
         }
         var cmd = new command_1.CmdDelRow(this.table, rowIdx);
         if (cmd.execute()) {
@@ -1501,7 +1501,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Add one column " + (left ? 'left' : 'right') + " of column " + (colIdx + 1));
+            log_1.log.info("Add one column " + (left ? 'left' : 'right') + " of column " + colIdx);
         }
         var cmd = new command_1.CmdAddColumn(this.table, colIdx, left);
         if (cmd.execute()) {
@@ -1517,7 +1517,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Delete column " + (colIdx + 1));
+            log_1.log.info("Delete column " + colIdx);
         }
         var cmd = new command_1.CmdDelColumn(this.table, colIdx);
         if (cmd.execute()) {
@@ -1533,7 +1533,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Merge cells. Row: " + (rowRange[0] + 1) + " ~ " + (rowRange[1] + 1) + ", Column: " + (colRange[0] + 1) + " ~ " + (colRange[1] + 1));
+            log_1.log.info("Merge cells. Row: " + rowRange[0] + " ~ " + rowRange[1] + ", Column: " + colRange[0] + " ~ " + colRange[1]);
         }
         var cmd = new command_1.CmdMergeCells(this.table, rowRange, colRange);
         if (cmd.execute()) {
@@ -1549,7 +1549,7 @@ var TableEditor = /** @class */ (function () {
             return;
         }
         if (this.debug) {
-            log_1.log.info("Split cell (" + (rowIdx + 1) + ", " + (colIdx + 1) + ") into " + rowCount + " rows and " + colCount + " columns");
+            log_1.log.info("Split cell (" + rowIdx + ", " + colIdx + ") into " + rowCount + " rows and " + colCount + " columns");
         }
         var cmd = new command_1.CmdSplitCell(this.table, rowIdx, colIdx, rowCount, colCount);
         if (cmd.execute()) {
@@ -1846,7 +1846,7 @@ var Td = /** @class */ (function () {
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
-        this.ccElem.innerHTML = this.content;
+        this.ccElem.innerText = this.content;
         this.elem.appendChild(this.ccElem);
         this.elem['td'] = this;
         this.setRowRange(options.rowRange);
@@ -1892,7 +1892,7 @@ var Td = /** @class */ (function () {
         if (updateElement === void 0) { updateElement = true; }
         this.content = content;
         if (updateElement) {
-            this.ccElem.innerHTML = content;
+            this.ccElem.innerText = content;
         }
     };
     Td.prototype.setEditable = function (editable) {
@@ -2222,7 +2222,7 @@ var Table = /** @class */ (function () {
             var target = e.target;
             if (_this.eventTargetIsCellContent(e)) {
                 var td = ep[1].td;
-                td.setContent(target['innerHTML'], false);
+                td.setContent(target['innerText'], false);
             }
         });
         var RESIZE_OFFSET = 5;
@@ -2506,7 +2506,7 @@ var Table = /** @class */ (function () {
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return "Rowspan not match. rowIndex: " + i + ", colIndex: " + j;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerHTML']) {
+                if (td.getContent() !== tdElem.firstChild['innerText']) {
                     return "Td content not match. rowIndex: " + i + ", colIndex: " + j;
                 }
             }

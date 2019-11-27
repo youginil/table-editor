@@ -905,7 +905,7 @@ export class CmdSplitCell implements Command {
             // originStartColIdx = 0 originEndColIdx = 1 cPerCol = 2
             const cPerCol = this.colCount / originColCount;
             colStep = 1;
-            endColIdxAfterSplit = originStartColIdx + originColCount - 1;
+            endColIdxAfterSplit = originStartColIdx + this.colCount - 1;
             const blankColsInc = cPerCol - 1;
             // 每行在被拆分单元格（包含）及后面的单元格进行扩展
             for (let i = originStartColIdx; i < originEndColIdx + 1; i++) {
@@ -924,7 +924,7 @@ export class CmdSplitCell implements Command {
             // 缩小被拆分的单元格
             this.cmdMacro.addCommand(new CmdSetCellColRange(this.table, i, originStartColIdx, [originStartColIdx, originStartColIdx + colStep - 1]));
             // 插入新增的单元格
-            for (let j = originStartColIdx + colStep; j < endRowIdxAfterSplit + 1; j += colStep) {
+            for (let j = originStartColIdx + colStep; j < endColIdxAfterSplit + 1; j += colStep) {
                 const tmpTd = this.table.createCell({
                     rowRange: [i, i + rowStep - 1],
                     colRange: [j, j + colStep - 1]

@@ -1,6 +1,6 @@
 {
   "name": "web-table-editor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "edit table structure and content",
   "main": "index.js",
   "scripts": {
