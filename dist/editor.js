@@ -1037,18 +1037,47 @@ var CmdExtendRows = /** @class */ (function () {
         this.offsetRows = offsetRows;
     }
     CmdExtendRows.prototype.execute = function () {
+        var _this = this;
+        this.cmdMacro = new CommandMacro();
         var trs = this.table.getRows();
         if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
             log_1.default.error('CmdExtendRow', "Invalid rowIdx: " + this.rowIdx + ", total rows: " + trs.length);
             return false;
         }
-        trs[this.rowIdx].extendRows(this.offsetRows);
-        return true;
+        var colCount = this.table.getColCount();
+        var tds = trs[this.rowIdx].getTds();
+        var holeStart = 0;
+        var holeList = [];
+        for (var i = 0; i < tds.length; i++) {
+            var td = tds[i];
+            var colRange = td.getColRange();
+            if (holeStart < colRange[0]) {
+                // 遇到空洞把空洞上面的单元格进行扩展
+                holeList.push([holeStart, colRange[1] - 1]);
+            }
+            else {
+                // 扩展单元格
+                var rowRange = td.getRowRange();
+                this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, rowRange[0], colRange[0], [rowRange[0], rowRange[1] + this.offsetRows]));
+            }
+            holeStart = colRange[1] + 1;
+        }
+        // 如果最后有空洞
+        if (holeStart <= colCount - 1) {
+            holeList.push([holeStart, colCount - 1]);
+        }
+        holeList.forEach(function (holeRange) {
+            var holes = _this.table.getTdsCrossRow(_this.rowIdx, holeRange[0], holeRange[1]);
+            holes.forEach(function (hole) {
+                var holeRowRange = hole.getRowRange();
+                var holeColRange = hole.getColRange();
+                _this.cmdMacro.addCommand(new CmdSetCellRowRange(_this.table, holeRowRange[0], holeColRange[0], [holeRowRange[0], holeRowRange[1] + _this.offsetRows]));
+            });
+        });
+        return this.cmdMacro.execute();
     };
     CmdExtendRows.prototype.undo = function () {
-        var tr = this.table.getRowByIndex(this.rowIdx);
-        tr.extendRows(-this.offsetRows);
-        return true;
+        return this.cmdMacro.undo();
     };
     return CmdExtendRows;
 }());
@@ -1345,6 +1374,7 @@ var CmdSplitCell = /** @class */ (function () {
         if (success) {
             this.table.setColCount(this.table.getColCount() + this.colCount - 1);
         }
+        return success;
     };
     CmdSplitCell.prototype.undo = function () {
         return this.cmdMacro.undo();
@@ -2068,12 +2098,6 @@ var Tr = /** @class */ (function () {
             }
         });
         return anchorIdx;
-    };
-    Tr.prototype.extendRows = function (rows) {
-        this.tds.forEach(function (td) {
-            var rowRange = td.getRowRange();
-            td.setRowRange([rowRange[0], rowRange[1] + rows]);
-        });
     };
     Tr.prototype.extendCols = function (colIdx, offsetCols) {
         var targetTd;

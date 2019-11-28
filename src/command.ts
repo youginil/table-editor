@@ -602,6 +602,7 @@ class CmdExtendRows implements Command {
     private table: Table;
     private readonly rowIdx: number;
     private readonly offsetRows: number;
+    private cmdMacro: CommandMacro;
 
     constructor(table: Table, rowIdx: number, offsetRows: number) {
         this.table = table;
@@ -610,19 +611,46 @@ class CmdExtendRows implements Command {
     }
 
     execute(): boolean {
+        this.cmdMacro = new CommandMacro();
         const trs = this.table.getRows();
         if (this.rowIdx < 0 || this.rowIdx >= trs.length) {
             log.error('CmdExtendRow', `Invalid rowIdx: ${this.rowIdx}, total rows: ${trs.length}`);
             return false;
         }
-        trs[this.rowIdx].extendRows(this.offsetRows);
-        return true;
+        const colCount = this.table.getColCount();
+        const tds = trs[this.rowIdx].getTds();
+        let holeStart = 0;
+        const holeList = [];
+        for (let i = 0; i < tds.length; i++) {
+            const td = tds[i];
+            const colRange = td.getColRange();
+            if (holeStart < colRange[0]) {
+                // 遇到空洞把空洞上面的单元格进行扩展
+                holeList.push([holeStart, colRange[1] - 1]);
+            } else {
+                // 扩展单元格
+                const rowRange = td.getRowRange();
+                this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, rowRange[0], colRange[0], [rowRange[0], rowRange[1] + this.offsetRows]));
+            }
+            holeStart = colRange[1] + 1;
+        }
+        // 如果最后有空洞
+        if (holeStart <= colCount - 1) {
+            holeList.push([holeStart, colCount - 1]);
+        }
+        holeList.forEach((holeRange) => {
+            const holes = this.table.getTdsCrossRow(this.rowIdx, holeRange[0], holeRange[1]);
+            holes.forEach((hole) => {
+                const holeRowRange = hole.getRowRange();
+                const holeColRange = hole.getColRange();
+                this.cmdMacro.addCommand(new CmdSetCellRowRange(this.table, holeRowRange[0], holeColRange[0], [holeRowRange[0], holeRowRange[1] + this.offsetRows]));
+            });
+        });
+        return this.cmdMacro.execute();
     }
 
     undo(): boolean {
-        const tr = this.table.getRowByIndex(this.rowIdx);
-        tr.extendRows(-this.offsetRows);
-        return true;
+        return this.cmdMacro.undo();
     }
 }
 
@@ -943,6 +971,7 @@ export class CmdSplitCell implements Command {
         if (success) {
             this.table.setColCount(this.table.getColCount() + this.colCount - 1);
         }
+        return success;
     }
 
     undo(): boolean {

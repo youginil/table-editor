@@ -282,13 +282,6 @@ class Tr {
         return anchorIdx;
     }
 
-    extendRows(rows: number) {
-        this.tds.forEach((td) => {
-            const rowRange = td.getRowRange();
-            td.setRowRange([rowRange[0], rowRange[1] + rows]);
-        });
-    }
-
     extendCols(colIdx: number, offsetCols: number) {
         let targetTd;
         let targetIdx;
