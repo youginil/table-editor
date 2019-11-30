@@ -40,8 +40,9 @@ export class TableEditor {
         this.elem = options.elem;
         this.elem.innerHTML = '';
         const className = `table-editor-hahaha`;
-        this.editable = 'editable' in options ? options.editable : true;
+        this.editable = 'editable' in options ? !!options.editable : true;
         this.eventHandler = new EditorEventHandler();
+        this.debug = 'debug' in options ? !!options.debug : false;
         this.table = new Table({
             className: className,
             data: options.data,
@@ -63,7 +64,6 @@ export class TableEditor {
         });
         this.elem.appendChild(this.table.elem);
         this.cmdHistory = new CommandHistory(10);
-        this.debug = 'debug' in options ? !!options.debug : false;
     }
 
     addRow(rowIdx: number, above: boolean) {
@@ -169,7 +169,7 @@ export class TableEditor {
     }
 
     getCellContent(rowIdx: number, colIdx: number): string {
-        return this.table.getCellContent(rowIdx, colIdx);
+        return this.table.getCellContent(rowIdx, colIdx) || '';
     }
 
     setCellContent(rowIdx: number, colIdx: number, content: string) {
@@ -222,7 +222,7 @@ export class TableEditor {
     }
 
     setEditable(editable: boolean) {
-        this.editable = !!editable;
+        this.editable = editable;
         this.table.setEditable(this.editable);
     }
 
@@ -248,7 +248,7 @@ export class TableEditor {
 }
 
 class CommandHistory {
-    private readonly commands: Array<Command>;
+    private readonly commands: Array<Command | null>;
     private readonly cap: number;
     private divide: number = 0;
     private top: number = 0;
@@ -275,13 +275,13 @@ class CommandHistory {
     }
 
     undo() {
-        if (this.divide > 0 && !this.commands[--this.divide].undo()) {
+        if (this.divide > 0 && !(this.commands[--this.divide] as Command).undo()) {
             this.clear();
         }
     }
 
     redo() {
-        if (this.divide < this.top && !this.commands[this.divide++].execute()) {
+        if (this.divide < this.top && !(this.commands[this.divide++] as Command).execute()) {
             this.clear();
         }
     }

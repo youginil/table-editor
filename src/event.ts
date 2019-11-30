@@ -1,7 +1,7 @@
 import {Td, TdRange} from "./table";
 import log from "./log";
 
-export const EDITOR_EVENTS = {
+export const EDITOR_EVENTS: {[prop: string]: string} = {
     CELL_FOCUS: 'cellfocus',
     CELL_BLUR: 'cellblur',
     MOUSE_MOVE: 'mousemove'
@@ -30,7 +30,7 @@ export class EditorEventHandler {
             log.warn(`Invalid event handler`);
             return;
         }
-        this.events.get(name).push(handler);
+        (this.events.get(name) as Array<Function>).push(handler);
     }
 
     removeHandler(name: string, handler: Function) {
@@ -43,14 +43,14 @@ export class EditorEventHandler {
             return;
         }
         const hs = this.events.get(name);
-        const idx = hs.indexOf(handler);
+        const idx = (hs as Array<Function>).indexOf(handler);
         if (idx >= 0) {
-            hs.splice(idx, 1);
+            (hs as Array<Function>).splice(idx, 1);
         }
     }
 
     trigger(name: string, value: any) {
-        this.events.get(name).forEach((h) => {
+        (this.events.get(name) as Array<Function>).forEach((h) => {
             h(value);
         });
     }

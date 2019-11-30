@@ -1,4 +1,4 @@
-import {TdRange, Table, Td} from './table'
+import {TdRange, Table, Tr, Td} from './table'
 import log from "./log";
 
 export interface Command {
@@ -60,6 +60,8 @@ export class CommandMacro implements Command {
     }
 }
 
+const noopCmdMacro = new CommandMacro();
+
 class CmdAddCell implements Command {
     private table: Table;
     private readonly td: Td;
@@ -88,7 +90,7 @@ class CmdDelCell implements Command {
     private table: Table;
     private readonly rowIdx: number;
     private readonly colIdx: number;
-    private td: Td;
+    private td: Td | null = null;
 
     constructor(table: Table, rowIdx: number, colIdx: number) {
         this.table = table;
@@ -107,7 +109,11 @@ class CmdDelCell implements Command {
 
     undo(): boolean {
         const tr = this.table.getRowByIndex(this.rowIdx);
-        return tr.addTd(this.td) > 0;
+        if (!tr) {
+            log.error('CmdDelCell', `Row not found. rowIdx: ${this.rowIdx}`);
+            return false;
+        }
+        return tr.addTd(this.td as Td) > 0;
     }
 }
 
@@ -151,7 +157,7 @@ class CmdSetCellRowRange implements Command {
     private table: Table;
     private readonly rowIdx: number;
     private readonly colIdx: number;
-    private oldRange: TdRange;
+    private oldRange: TdRange | null = null;
     private readonly newRange: TdRange;
 
     constructor(table: Table, rowIdx: number, colIdx: number, newRange: TdRange) {
@@ -174,7 +180,11 @@ class CmdSetCellRowRange implements Command {
 
     undo(): boolean {
         const td = this.table.getCell(this.rowIdx, this.colIdx);
-        td.setRowRange(this.oldRange);
+        if (!td) {
+            log.error('CmdSetCellRowRange', `Cell not found. rowIdx: ${this.rowIdx}, colIdx: ${this.colIdx}`);
+            return false;
+        }
+        td.setRowRange(this.oldRange as TdRange);
         return true;
     }
 }
@@ -183,7 +193,7 @@ class CmdSetCellColRange implements Command {
     private table: Table;
     private readonly rowIdx: number;
     private readonly colIdx: number;
-    private oldRange: TdRange;
+    private oldRange: TdRange | null = null;
     private readonly newRange: TdRange;
 
     constructor(table: Table, rowIdx: number, colIdx: number, newRange: TdRange) {
@@ -205,7 +215,11 @@ class CmdSetCellColRange implements Command {
 
     undo(): boolean {
         const td = this.table.getCell(this.newRange[0], this.newRange[1]);
-        td.setColRange(this.oldRange);
+        if (!td) {
+            log.error('CmdSetCellColRange', `Cell not found. rowIdx: ${this.newRange[0]}, colIdx: ${this.newRange[1]}`);
+            return false;
+        }
+        td.setColRange(this.oldRange as TdRange);
         return true;
     }
 }
@@ -248,7 +262,7 @@ class CmdDelBlankRow implements Command {
 
 class CmdRemoveBlankRows implements Command {
     private readonly table: Table;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table) {
         this.table = table;
@@ -277,7 +291,7 @@ export class CmdAddRow implements Command {
     private readonly table: Table;
     private readonly refRowIdx: number;
     private readonly above: boolean;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, refRowIdx: number, above: boolean) {
         this.table = table;
@@ -322,7 +336,7 @@ export class CmdAddRow implements Command {
             if (holeStartColIdx < relTdColRange[0]) {
                 // 去上面的行中找到跨行的单元格，并取出跨了几行，如果相对的行《不是空洞的最后一个》或者《是最后一个并且向上添加行》
                 // 就把跨行的单元格增加跨一行
-                const tmpTds = this.table.getTdsCrossRow(this.refRowIdx - 1, holeStartColIdx, relTdColRange[0] - 1);
+                const tmpTds: Array<Td> = this.table.getTdsCrossRow(this.refRowIdx - 1, holeStartColIdx, relTdColRange[0] - 1);
                 if (tmpTds.length === 0) {
                     log.error('CmdAddRow', `Table data error`);
                     return false;
@@ -362,7 +376,7 @@ export class CmdAddRow implements Command {
 export class CmdDelRow implements Command {
     private readonly table: Table;
     private readonly rowIdx: number;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, rowIdx: number) {
         this.table = table;
@@ -394,7 +408,7 @@ export class CmdAddColumn implements Command {
     private readonly table: Table;
     private readonly refColIdx: number;
     private readonly left: boolean;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, refColIdx: number, left: boolean) {
         this.table = table;
@@ -434,7 +448,7 @@ export class CmdAddColumn implements Command {
                         const tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
                         this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
                         const tmpTd = this.table.createCell({
-                            rowRange: [i, i],
+                            rowRange: [rowRange[0], rowRange[1]],
                             colRange: [tmpColIdx, tmpColIdx]
                         });
                         this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
@@ -451,7 +465,7 @@ export class CmdAddColumn implements Command {
         const success = this.cmdMacro.execute();
         if (success) {
             const c = this.table.getColCount();
-            this.table.setColCount(c - 1);
+            this.table.setColCount(c + 1);
         }
         return success;
     }
@@ -469,7 +483,7 @@ export class CmdAddColumn implements Command {
 export class CmdDelColumn implements Command {
     private readonly table: Table;
     private readonly colIdx: number;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, colIdx: number) {
         this.table = table;
@@ -480,7 +494,7 @@ export class CmdDelColumn implements Command {
         this.cmdMacro = new CommandMacro();
         this.cmdMacro.addCommand(new CmdDelColHeader(this.table, this.colIdx));
         const firstTr = this.table.getRowByIndex(0);
-        let firstTd = firstTr.getTdByColIndex(this.colIdx);
+        let firstTd = (firstTr as Tr).getTdByColIndex(this.colIdx);
         if (!firstTd) {
             log.warn('CmdDelColumn', `Invalid colIdx: ${this.colIdx}`);
             return false;
@@ -493,10 +507,10 @@ export class CmdDelColumn implements Command {
                 return false;
             }
         }
-        const firstTdIdx = firstTr.indexOf(firstTd);
-        const tdsOfFirstRow = firstTr.getTds();
+        const firstTdIdx = (firstTr as Tr).indexOf(firstTd);
+        const tdsOfFirstRow = (firstTr as Tr).getTds();
         // 第一行从colIdx单元格往后依次检查，保证列对齐
-        let rightAlignColIdx;
+        let rightAlignColIdx: number = -1;
         let rightAligned = false;
         for (let i = firstTdIdx; i < tdsOfFirstRow.length; i++) {
             rightAlignColIdx = tdsOfFirstRow[i].getColRange()[1];
@@ -571,7 +585,7 @@ class CmdMoveCol implements Command {
     private readonly rowIdx: number;
     private readonly startColIdx: number;
     private readonly offset: number;
-    private anchorIdx: number;
+    private anchorIdx: number = -1;
 
     constructor(table: Table, rowIdx: number, startColIdx: number, offset: number) {
         this.table = table;
@@ -591,7 +605,7 @@ class CmdMoveCol implements Command {
 
     undo(): boolean {
         if (this.anchorIdx >= 0) {
-            const tr = this.table.getRowByIndex(this.rowIdx);
+            const tr = this.table.getRowByIndex(this.rowIdx) as Tr;
             tr.moveCols(-this.offset, this.anchorIdx);
         }
         return true;
@@ -602,7 +616,7 @@ class CmdExtendRows implements Command {
     private table: Table;
     private readonly rowIdx: number;
     private readonly offsetRows: number;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, rowIdx: number, offsetRows: number) {
         this.table = table;
@@ -678,7 +692,7 @@ class CmdExtendCols implements Command {
     }
 
     undo(): boolean {
-        const tr = this.table.getRowByIndex(this.rowIdx);
+        const tr = this.table.getRowByIndex(this.rowIdx) as Tr;
         tr.extendCols(this.colIdx, -this.offsetCols);
         return true;
     }
@@ -689,7 +703,7 @@ export class CmdMergeCells implements Command {
     private readonly rowRange: TdRange;
     private readonly colRange: TdRange;
     private tds: Array<Td> = [];
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, rowRange: TdRange, colRange: TdRange) {
         this.table = table;
@@ -761,7 +775,7 @@ export class CmdMergeCells implements Command {
         // 取出所选区域的单元格
         let content = '';
         for (let i = rowRange[0]; i <= rowRange[1]; i++) {
-            const tr = this.table.getRowByIndex(i);
+            const tr = this.table.getRowByIndex(i) as Tr;
             const tds = tr.getTdsInColRange(colRange);
             this.tds = this.tds.concat(tds);
             content += tds.reduce((r, td) => {
@@ -790,7 +804,7 @@ export class CmdMergeCells implements Command {
 class CmdShrinkColumns implements Command {
     private readonly table: Table;
     private readonly colRange: TdRange;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, colRange: TdRange) {
         this.table = table;
@@ -854,7 +868,7 @@ export class CmdSplitCell implements Command {
     private readonly colIdx: number;
     private readonly rowCount: number;
     private readonly colCount: number;
-    private cmdMacro: CommandMacro;
+    private cmdMacro: CommandMacro = noopCmdMacro;
 
     constructor(table: Table, rowIdx: number, colIdx: number, rowCount: number, colCount: number) {
         this.table = table;
@@ -944,7 +958,7 @@ export class CmdSplitCell implements Command {
             // 每行在被拆分单元格（包含）及后面的单元格进行扩展
             for (let i = originStartColIdx; i < originEndColIdx + 1; i++) {
                 for (let j = 0; j < finalEndRowIdx; j++) {
-                    this.cmdMacro.addCommand(new CmdExtendCols(this.table, j, i + (i - originStartColIdx) * cPerCol, blankColsInc));
+                    this.cmdMacro.addCommand(new CmdExtendCols(this.table, j, originStartColIdx, blankColsInc));
                 }
                 let tmpC = blankColsInc;
                 while (tmpC-- > 0) {
@@ -984,7 +998,7 @@ export class CmdSetCellContent implements Command {
     private readonly row: number;
     private readonly col: number;
     private readonly content: string;
-    private prevContent: string;
+    private prevContent: string = '';
 
     constructor(table: Table, row: number, col: number, content: string) {
         this.table = table;
@@ -994,10 +1008,11 @@ export class CmdSetCellContent implements Command {
     }
 
     execute(): boolean {
-        this.prevContent = this.table.getCellContent(this.row, this.col);
-        if (this.prevContent === null) {
+        const prevContent = this.table.getCellContent(this.row, this.col);
+        if (prevContent === null) {
             return false;
         }
+        this.prevContent = prevContent as string;
         return this.table.setCellContent(this.row, this.col, this.content);
     }
 

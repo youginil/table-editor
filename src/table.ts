@@ -14,7 +14,9 @@ type TrData = Array<TdData>
 type TableData = Array<TrData>
 
 interface Props {
-    style?: object
+    style?: {
+        [prop: string]: string
+    }
 }
 
 type TableCells = Array<TdData>;
@@ -40,13 +42,13 @@ type tdOptions = {
 };
 
 class Td {
-    private rowRange: TdRange;
-    private colRange: TdRange;
+    private rowRange: TdRange = [-1, -1];
+    private colRange: TdRange = [-1, -1];
     private content: string;
     private readonly elem: HTMLTableCellElement;
     private readonly ccElem: HTMLDivElement;
     private props: Props;
-    private editable: boolean;
+    private editable: boolean = true;
 
     constructor(options: tdOptions) {
         this.content = options.content || '';
@@ -56,12 +58,14 @@ class Td {
         this.ccElem.className = 'cell-content';
         this.ccElem.innerText = this.content;
         this.elem.appendChild(this.ccElem);
-        this.elem['td'] = this;
+        // @ts-ignore
+        this.elem.td = this;
         this.setRowRange(options.rowRange);
         this.setColRange(options.colRange);
         this.props = options.props || {};
         if (this.props.style) {
             Object.keys(this.props.style).forEach((k) => {
+                // @ts-ignore
                 this.elem.style[k] = this.props.style[k];
             });
         }
@@ -109,9 +113,6 @@ class Td {
     }
 
     setEditable(editable: boolean) {
-        if (this.editable === editable) {
-            return;
-        }
         this.editable = editable;
         if (this.editable) {
             this.ccElem.contentEditable = 'true';
@@ -121,10 +122,10 @@ class Td {
     }
 }
 
-class Tr {
+export class Tr {
     private readonly tds: Array<Td>;
     private readonly elem: HTMLTableRowElement;
-    private colCount: number;
+    private colCount: number = 0;
 
     constructor(tds?: Array<Td>) {
         this.tds = tds || [];
@@ -284,25 +285,30 @@ class Tr {
 
     extendCols(colIdx: number, offsetCols: number) {
         let targetTd;
-        let targetIdx;
+        let targetIdx = -1;
         // 设置为"空洞"的开始
-        let prevIdx = 0;
+        let holeStart = 0;
         for (let i = 0; i < this.tds.length; i++) {
             const td = this.tds[i];
             const colRange = td.getColRange();
-            if ((colIdx >= colRange[0] && colIdx <= colIdx) || (colIdx >= prevIdx && colIdx < colRange[0])) {
-                targetTd = td;
-                targetIdx = i;
+            if (colIdx >= holeStart && colIdx < colRange[0]) {
+                // 在空洞里，就把后面的都往后移动
+                for (let j = i; j < this.tds.length; j++) {
+                    const tmpTd = this.tds[j];
+                    const tmpColRange = tmpTd.getColRange();
+                    tmpTd.setColRange([tmpColRange[0] + offsetCols, tmpColRange[1] + offsetCols]);
+                }
+                break;
+            } else if (colIdx >= colRange[0] && colIdx <= colRange[1]) {
+                // 如果在单元格里，就把当前单元格扩展，把后面的单元格后移
+                td.setColRange([colRange[0], colRange[1] + offsetCols]);
+                for (let j = i + 1; j < this.tds.length; j++) {
+                    const tmpColRange = this.tds[j].getColRange();
+                    this.tds[j].setColRange([tmpColRange[0] + offsetCols, tmpColRange[1] + offsetCols]);
+                }
+                break;
             }
-            prevIdx = colRange[1] + 1;
-        }
-        if (targetTd) {
-            let colRange = targetTd.getColRange();
-            targetTd.setColRange([colRange[0], colRange[1] + offsetCols]);
-            for (let i = targetIdx + 1; i < this.tds.length; i++) {
-                colRange = this.tds[i].getColRange();
-                this.tds[i].setColRange([colRange[0] + offsetCols, colRange[1] + offsetCols]);
-            }
+            holeStart = colRange[1] + 1;
         }
     }
 
@@ -326,10 +332,12 @@ type tableOptions = {
     cellFocusedBg: string
     borderColor: string
     debug: boolean
-    onCellFocus: (CellFocusEvent) => void
-    onCellBlur: (CellBlurEvent) => void
-    onMouseMove: (MouseMoveEvent) => void
+    onCellFocus: (e: TECellFocusEvent) => void
+    onCellBlur: (e: TECellBlurEvent) => void
+    onMouseMove: (e: TEMouseMoveEvent) => void
 };
+
+type mousePos = { pageX: number, pageY: number, clientX: number, clientY: number };
 
 class Table {
     static defaultColWidth: number = 50;
@@ -344,24 +352,25 @@ class Table {
     private editable: boolean;
     private readonly resizeable: boolean;
     private debug: boolean;
-    private readonly onCellFocus: (CellFocusEvent) => void;
-    private readonly onCellBlur: (CellBlurEvent) => void;
-    private readonly onMouseMove: (MouseMoveEvent) => void;
+    private readonly onCellFocus: (e: TECellFocusEvent) => void;
+    private readonly onCellBlur: (e: TECellBlurEvent) => void;
+    private readonly onMouseMove: (e: TEMouseMoveEvent) => void;
 
     private mouseMode: MouseMode = MouseMode.NONE;
-    private mouseDownPos: { pageX: number, pageY: number, clientX: number, clientY: number };
+    private mouseDownPos: mousePos = {pageX: 0, pageY: 0, clientX: 0, clientY: 0};
     // 拖动的竖线的状态变量
-    private colElsResizing: Array<HTMLElement>;
-    private resizeRange: [number, number];
+    private colElsResizing: Array<HTMLElement> = [];
+    private resizeRange: [number, number] = [-1, -1];
     // 开始拖拽的单元格
-    private tdSelectStart: { r: number, c: number };
+    private tdSelectStart: {r: number, c: number} = {r: 0, c: 0};
 
     constructor(options: tableOptions) {
         this.elem = document.createElement('table');
         this.elem.className = options.className;
-        this.elem.innerHTML = '<colgroup></colgroup><tbody></tbody>';
-        this.colgroupElem = this.elem.querySelector('colgroup');
-        this.tbodyElem = this.elem.querySelector('tbody');
+        this.colgroupElem = document.createElement('colgroup');
+        this.tbodyElem = document.createElement('tbody');
+        this.elem.appendChild(this.colgroupElem);
+        this.elem.appendChild(this.tbodyElem);
         this.trs = [];
         this.editable = options.editable;
         this.resizeable = options.resizeable;
@@ -371,23 +380,20 @@ class Table {
         this.onCellFocus = options.onCellFocus;
         this.onCellBlur = options.onCellBlur;
         this.onMouseMove = options.onMouseMove;
-        if (!options.data) {
-            (<TableData>options.data) = [[{
-                row: [0, 0],
-                col: [0, 0],
-                content: '',
-                style: {}
-            }]];
-        }
+        let data = options.data || [[{
+            row: [0, 0],
+            col: [0, 0],
+            content: '',
+            style: {}
+        }]];
         try {
-            const data = options.data;
             if (data.length === 0) {
                 return;
             }
             const cwc = new ColWidthCalculator();
             if ('row' in data[0]) {
                 // TableCells
-                (<TableCells>data).forEach((tdData) => {
+                (data as TableCells).forEach((tdData) => {
                     const rowRange = tdData.row;
                     const colRange = tdData.col;
                     if (this.trs.length - 1 < rowRange[1]) {
@@ -398,7 +404,7 @@ class Table {
                         }
                     }
                     const tr = this.trs[rowRange[0]];
-                    const style = {};
+                    const style: {[prop: string]: string} = {};
                     if (this.borderColor) {
                         style['borderColor'] = this.borderColor;
                     }
@@ -409,7 +415,7 @@ class Table {
                         props: {style}
                     }));
                     if ('width' in tdData) {
-                        cwc.add(colRange, tdData.width);
+                        cwc.add(colRange, tdData['width'] as number);
                     }
                     if (this.colCount < colRange[1]) {
                         this.colCount = colRange[1];
@@ -417,15 +423,15 @@ class Table {
                 });
             } else {
                 // TableData
-                this.trs = (<TableData>data).map((trData) => {
+                this.trs = (data as TableData).map((trData) => {
                     const tds = trData.map((td) => {
                         if (this.colCount < td.col[1]) {
                             this.colCount = td.col[1];
                         }
                         if ('width' in td) {
-                            cwc.add(td.col, td.width);
+                            cwc.add(td.col, td.width as number);
                         }
-                        const style = {};
+                        const style: {[prop: string]: string} = {};
                         if (this.borderColor) {
                             style['borderColor'] = this.borderColor;
                         }
@@ -469,10 +475,11 @@ class Table {
             }
             e.stopPropagation();
             const ep = getEventPath(e);
-            const target = e.target;
+            const target = e.target as HTMLElement;
             if (this.eventTargetIsCellContent(e)) {
-                const td: Td = ep[1].td;
-                td.setContent(target['innerText'], false);
+                // @ts-ignore
+                const td: Td = (ep[1] as HTMLElement).td;
+                td.setContent(target['innerText'] as string, false);
             }
         });
 
@@ -488,9 +495,10 @@ class Table {
                 clientX: e.clientX,
                 clientY: e.clientY
             };
-            const target = e.target;
-            const td = <Td>target['parentNode']['td'];
-            let tmpIdx = td.getColRange()[0] + (target['offsetX'] < RESIZE_OFFSET ? 0 : 1);
+            const target = e.target as HTMLElement;
+            // @ts-ignore
+            const td = (target['parentNode'] as HTMLElement)['td'] as Td;
+            let tmpIdx = td.getColRange()[0] + (e.offsetX < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
                 if (!this.resizeable) {
                     return;
@@ -500,18 +508,20 @@ class Table {
                 }
                 // 不能拖拽第一条竖线
                 this.mouseMode = MouseMode.RESIZE;
-                const colEls = this.colgroupElem.children;
-                const maxLeftOffset = +colEls[tmpIdx + 1]['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
-                const colEl = <HTMLElement>colEls[tmpIdx];
+                const colEls = this.colgroupElem.children as HTMLCollection;
+                const maxLeftOffset = +(colEls[tmpIdx + 1] as HTMLElement)['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                const colEl = colEls[tmpIdx] as HTMLElement;
+                // @ts-ignore
                 colEl['originWidth'] = +colEl.style.width.slice(0, -2);
                 if (tmpIdx === colEls.length) {
                     // 最后一条竖线
-                    this.resizeRange = [maxLeftOffset, this.elem.parentElement.clientWidth - this.elem.clientWidth];
+                    this.resizeRange = [maxLeftOffset, (this.elem.parentElement as HTMLElement).clientWidth - this.elem.clientWidth];
                     this.colElsResizing = [colEl];
                 } else {
                     const maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
                     this.resizeRange = [maxLeftOffset, maxRightOffset];
-                    const leftColEl = <HTMLElement>colEls[tmpIdx - 1];
+                    const leftColEl = colEls[tmpIdx - 1] as HTMLElement;
+                    // @ts-ignore
                     leftColEl['originWidth'] = +leftColEl.style.width.slice(0, -2);
                     this.colElsResizing = [leftColEl, colEl];
                 }
@@ -530,10 +540,10 @@ class Table {
         });
 
         this.elem.addEventListener('mousemove', (e) => {
-            const target = e.target;
+            const target = e.target as HTMLElement;
             const ep = getEventPath(e);
             if (this.mouseMode === MouseMode.NONE) {
-                if (this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > e.target['clientWidth'] - RESIZE_OFFSET)) {
+                if (this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > target['clientWidth'] - RESIZE_OFFSET)) {
                     // 鼠标在竖线上
                     if (this.resizeable) {
                         this.elem.style.cursor = 'col-resize';
@@ -551,9 +561,11 @@ class Table {
                         ? Math.min(startPageX - e.pageX, this.resizeRange[0])
                         : -Math.min(e.pageX - startPageX, this.resizeRange[1]);
                     const leftColEl = this.colElsResizing[0];
+                    // @ts-ignore
                     leftColEl.style.width = `${leftColEl['originWidth'] - leftOffset}px`;
                     if (this.colElsResizing.length > 1) {
                         const rightColEl = this.colElsResizing[1];
+                        // @ts-ignore
                         rightColEl.style.width = `${rightColEl['originWidth'] + leftOffset}px`;
                     }
                 }
@@ -574,8 +586,11 @@ class Table {
 
         this.elem.addEventListener('focusin', (e) => {
             if (this.eventTargetIsCellContent(e)) {
-                e.target['parentElement']['style'].background = this.cellFocusedBg;
-                const td: Td = e.target['parentElement'].td;
+                const target = e.target as HTMLElement;
+                const tdEl = target.parentElement as HTMLElement;
+                tdEl.style.background = this.cellFocusedBg;
+                // @ts-ignore
+                const td: Td = tdEl.td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
                 this.onCellFocus(new TECellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
@@ -584,8 +599,11 @@ class Table {
 
         this.elem.addEventListener('focusout', (e) => {
             if (this.eventTargetIsCellContent(e)) {
-                e.target['parentElement']['style'].background = '';
-                const td: Td = e.target['parentElement'].td;
+                const target = e.target as HTMLElement;
+                const tdEl = target.parentElement as HTMLElement;
+                tdEl.style.background = '';
+                // @ts-ignore
+                const td: Td = tdEl.td;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
                 this.onCellBlur(new TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
@@ -608,7 +626,7 @@ class Table {
         return td;
     }
 
-    private eventTargetIsCellContent(e) {
+    private eventTargetIsCellContent(e: Event) {
         const ep = getEventPath(e);
         return e.target instanceof HTMLElement && e.target.classList.contains('cell-content') && ep[4] === this.elem;
     }
@@ -683,8 +701,8 @@ class Table {
     }
 
     // 获取空洞位置的单元格
-    getTdsCrossRow(fromRowIdx: number, colStartIdx: number, colEndIdx: number): Array<Td> | null {
-        const ret = [];
+    getTdsCrossRow(fromRowIdx: number, colStartIdx: number, colEndIdx: number): Array<Td> {
+        const ret: Array<Td> = [];
         if (fromRowIdx < 0 || fromRowIdx >= this.trs.length) {
             log.error('Table.getTdsCrossRow', `Invalid param fromRowIdx: ${fromRowIdx}`);
             return ret;
@@ -751,13 +769,13 @@ class Table {
         }
         for (let i = 0; i < this.trs.length; i++) {
             const tds = this.trs[i].getTds();
-            const tdElems = this.tbodyElem.children[i].children;
+            const tdElems = this.tbodyElem.children[i].children as HTMLCollection;
             if (tds.length !== tdElems.length) {
                 return `The td amount of ${i + 1}th row not match`;
             }
             for (let j = 0; j < tds.length; j++) {
                 const td = tds[j];
-                const tdElem = tdElems[j];
+                const tdElem = tdElems[j] as HTMLElement;
                 const rowRange = td.getRowRange();
                 const colRange = td.getColRange();
                 if (rowRange[0] < 0 || rowRange[1] < 0 || colRange[0] < 0 || colRange[1] < 0) {
@@ -766,15 +784,15 @@ class Table {
                 if (rowRange[0] !== i) {
                     return `Row range not match. rowIndex: ${i}`;
                 }
-                const colspan = tdElem.hasAttribute('colspan') ? +tdElem.getAttribute('colspan') : 1;
+                const colspan = tdElem.hasAttribute('colspan') ? +(tdElem as any).getAttribute('colspan') : 1;
                 if (colspan !== colRange[1] - colRange[0] + 1) {
                     return `Colspan not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
-                const rowspan = tdElem.hasAttribute('rowspan') ? +tdElem.getAttribute('rowspan') : 1;
+                const rowspan = tdElem.hasAttribute('rowspan') ? +(tdElem as any).getAttribute('rowspan') : 1;
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return `Rowspan not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerText']) {
+                if (td.getContent() !== (tdElem.children[0] as HTMLElement).innerText) {
                     return `Td content not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
             }
@@ -796,10 +814,10 @@ class Table {
                 };
             });
         });
-        const colEls = this.colgroupElem.children;
+        const colEls = this.colgroupElem.children as HTMLCollection;
         const colWidth = [];
         for (let i = 0; i < colEls.length; i++) {
-            colWidth.push(+colEls[i]['style'].width.slice(0, -2));
+            colWidth.push(+(colEls[i] as HTMLElement).style.width.slice(0, -2));
         }
         return {
             rows,
@@ -835,7 +853,7 @@ class Table {
             let holeStartIdx = 0;
             for (let i = 0; i < tds.length; i++) {
                 const tdColRange = tds[i].getColRange();
-                const points = new Set();
+                const points: Set<number> = new Set();
                 if (holeStartIdx < tdColRange[0]) {
                     // 把空洞中所有的点取出来
                     const holes = this.getTdsCrossRow(rowIdx, holeStartIdx, tdColRange[0] - 1);
@@ -860,7 +878,7 @@ class Table {
                 }
                 holeStartIdx = tdColRange[1] + 1;
                 if (points.size > 0) {
-                    points.forEach((v) => {
+                    points.forEach((v: number) => {
                         for (let i = 0; i < axis.length - 1; i++) {
                             if (v > axis[i] && v < axis[i + 1]) {
                                 axis.splice(i + 1, 0, <number>v);
@@ -871,7 +889,7 @@ class Table {
                 }
             }
         });
-        const result = [];
+        const result: Array<TdRange> = [];
         for (let i = 0; i < axis.length - 1; i++) {
             if (axis[i + 1] - axis[i] > redundancy) {
                 result.push([axis[i] + redundancy, axis[i + 1] - 1]);
@@ -886,43 +904,46 @@ class Table {
 }
 
 class ColWidthCalculator {
-    private readonly data: object;
-    private readonly result: Array<number>;
+    private readonly data: {
+        [prop: number]: {
+            [key: number]: number
+        }
+    };
+    private readonly result: Array<number> = [];
 
     constructor() {
         this.data = Object.create(null);
-        this.result = [];
     }
 
-    add(colRange: TdRange, width: number) {
+    add(colRange: TdRange, width: any) {
         if (typeof width !== 'number') {
             return;
         }
         if (colRange[0] === colRange[1]) {
             if (colRange[0] > this.result.length - 1) {
                 for (let i = this.result.length; i <= colRange[0]; i++) {
-                    this.result.push(null);
+                    this.result.push(0);
                 }
-                this.result[colRange[0]] = width;
+                this.result[colRange[0]] = width as number;
             }
         } else {
             if (!(colRange[0] in this.data)) {
                 this.data[colRange[0]] = {};
             }
-            this.data[colRange[0]][colRange[1]] = width;
+            this.data[colRange[0]][colRange[1]] = width as number;
         }
     }
 
     calc(colCount: number, colWidth: number | Array<number>): Array<number> {
         if (colCount > this.result.length) {
             for (let i = this.result.length; i < colCount; i++) {
-                this.result.push(null);
+                this.result.push(0);
             }
         }
         const isNum: boolean = typeof colWidth === 'number';
         this.result.forEach((w, i) => {
             if (w === null) {
-                this.result[i] = isNum ? colWidth : colWidth[i];
+                this.result[i] = isNum ? colWidth as number : (colWidth as Array<number>)[i];
             }
         });
         return this.result;

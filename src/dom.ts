@@ -10,15 +10,15 @@ export function insertNode(parent: Node, child: Node, idx: number): boolean {
     return true;
 }
 
-export function getEventPath(e) {
+export function getEventPath(e: Event) {
     if ('path' in e) {
-        return e.path;
+        return e['path'];
     }
     const path = [e.target];
-    let elem = e.target.parentElement;
-    while (elem.parentElement !== null) {
+    let elem = e.target as HTMLElement;
+    while ((elem as HTMLElement)['parentElement'] !== null) {
         path.push(elem.parentElement);
-        elem = elem.parentElement;
+        elem = elem.parentElement as HTMLElement;
     }
     path.push(document, window);
     return path;

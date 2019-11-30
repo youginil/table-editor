@@ -578,6 +578,7 @@ var CommandMacro = /** @class */ (function () {
     return CommandMacro;
 }());
 exports.CommandMacro = CommandMacro;
+var noopCmdMacro = new CommandMacro();
 var CmdAddCell = /** @class */ (function () {
     function CmdAddCell(table, td) {
         this.table = table;
@@ -599,6 +600,7 @@ var CmdAddCell = /** @class */ (function () {
 }());
 var CmdDelCell = /** @class */ (function () {
     function CmdDelCell(table, rowIdx, colIdx) {
+        this.td = null;
         this.table = table;
         this.rowIdx = rowIdx;
         this.colIdx = colIdx;
@@ -613,6 +615,10 @@ var CmdDelCell = /** @class */ (function () {
     };
     CmdDelCell.prototype.undo = function () {
         var tr = this.table.getRowByIndex(this.rowIdx);
+        if (!tr) {
+            log_1.default.error('CmdDelCell', "Row not found. rowIdx: " + this.rowIdx);
+            return false;
+        }
         return tr.addTd(this.td) > 0;
     };
     return CmdDelCell;
@@ -645,6 +651,7 @@ var CmdDelColHeader = /** @class */ (function () {
 }());
 var CmdSetCellRowRange = /** @class */ (function () {
     function CmdSetCellRowRange(table, rowIdx, colIdx, newRange) {
+        this.oldRange = null;
         this.table = table;
         this.rowIdx = rowIdx;
         this.colIdx = colIdx;
@@ -662,6 +669,10 @@ var CmdSetCellRowRange = /** @class */ (function () {
     };
     CmdSetCellRowRange.prototype.undo = function () {
         var td = this.table.getCell(this.rowIdx, this.colIdx);
+        if (!td) {
+            log_1.default.error('CmdSetCellRowRange', "Cell not found. rowIdx: " + this.rowIdx + ", colIdx: " + this.colIdx);
+            return false;
+        }
         td.setRowRange(this.oldRange);
         return true;
     };
@@ -669,6 +680,7 @@ var CmdSetCellRowRange = /** @class */ (function () {
 }());
 var CmdSetCellColRange = /** @class */ (function () {
     function CmdSetCellColRange(table, rowIdx, colIdx, newRange) {
+        this.oldRange = null;
         this.table = table;
         this.rowIdx = rowIdx;
         this.colIdx = colIdx;
@@ -685,6 +697,10 @@ var CmdSetCellColRange = /** @class */ (function () {
     };
     CmdSetCellColRange.prototype.undo = function () {
         var td = this.table.getCell(this.newRange[0], this.newRange[1]);
+        if (!td) {
+            log_1.default.error('CmdSetCellColRange', "Cell not found. rowIdx: " + this.newRange[0] + ", colIdx: " + this.newRange[1]);
+            return false;
+        }
         td.setColRange(this.oldRange);
         return true;
     };
@@ -718,6 +734,7 @@ var CmdDelBlankRow = /** @class */ (function () {
 }());
 var CmdRemoveBlankRows = /** @class */ (function () {
     function CmdRemoveBlankRows(table) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
     }
     CmdRemoveBlankRows.prototype.execute = function () {
@@ -740,6 +757,7 @@ var CmdRemoveBlankRows = /** @class */ (function () {
 }());
 var CmdAddRow = /** @class */ (function () {
     function CmdAddRow(table, refRowIdx, above) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.refRowIdx = refRowIdx;
         this.above = above;
@@ -822,6 +840,7 @@ var CmdAddRow = /** @class */ (function () {
 exports.CmdAddRow = CmdAddRow;
 var CmdDelRow = /** @class */ (function () {
     function CmdDelRow(table, rowIdx) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.rowIdx = rowIdx;
     }
@@ -849,6 +868,7 @@ var CmdDelRow = /** @class */ (function () {
 exports.CmdDelRow = CmdDelRow;
 var CmdAddColumn = /** @class */ (function () {
     function CmdAddColumn(table, refColIdx, left) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.refColIdx = refColIdx;
         this.left = left;
@@ -884,7 +904,7 @@ var CmdAddColumn = /** @class */ (function () {
                         var tmpColIdx = this.left ? colRange[0] : colRange[1] + 1;
                         this.cmdMacro.addCommand(new CmdMoveCol(this.table, rowRange[0], tmpColIdx, 1));
                         var tmpTd = this.table.createCell({
-                            rowRange: [i, i],
+                            rowRange: [rowRange[0], rowRange[1]],
                             colRange: [tmpColIdx, tmpColIdx]
                         });
                         this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
@@ -901,7 +921,7 @@ var CmdAddColumn = /** @class */ (function () {
         var success = this.cmdMacro.execute();
         if (success) {
             var c = this.table.getColCount();
-            this.table.setColCount(c - 1);
+            this.table.setColCount(c + 1);
         }
         return success;
     };
@@ -918,6 +938,7 @@ var CmdAddColumn = /** @class */ (function () {
 exports.CmdAddColumn = CmdAddColumn;
 var CmdDelColumn = /** @class */ (function () {
     function CmdDelColumn(table, colIdx) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.colIdx = colIdx;
     }
@@ -942,7 +963,7 @@ var CmdDelColumn = /** @class */ (function () {
         var firstTdIdx = firstTr.indexOf(firstTd);
         var tdsOfFirstRow = firstTr.getTds();
         // 第一行从colIdx单元格往后依次检查，保证列对齐
-        var rightAlignColIdx;
+        var rightAlignColIdx = -1;
         var rightAligned = false;
         for (var i = firstTdIdx; i < tdsOfFirstRow.length; i++) {
             rightAlignColIdx = tdsOfFirstRow[i].getColRange()[1];
@@ -1008,6 +1029,7 @@ var CmdMoveRow = /** @class */ (function () {
 }());
 var CmdMoveCol = /** @class */ (function () {
     function CmdMoveCol(table, rowIdx, startColIdx, offset) {
+        this.anchorIdx = -1;
         this.table = table;
         this.rowIdx = rowIdx;
         this.startColIdx = startColIdx;
@@ -1032,6 +1054,7 @@ var CmdMoveCol = /** @class */ (function () {
 }());
 var CmdExtendRows = /** @class */ (function () {
     function CmdExtendRows(table, rowIdx, offsetRows) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.rowIdx = rowIdx;
         this.offsetRows = offsetRows;
@@ -1107,6 +1130,7 @@ var CmdExtendCols = /** @class */ (function () {
 var CmdMergeCells = /** @class */ (function () {
     function CmdMergeCells(table, rowRange, colRange) {
         this.tds = [];
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.rowRange = rowRange;
         this.colRange = colRange;
@@ -1204,6 +1228,7 @@ var CmdMergeCells = /** @class */ (function () {
 exports.CmdMergeCells = CmdMergeCells;
 var CmdShrinkColumns = /** @class */ (function () {
     function CmdShrinkColumns(table, colRange) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.colRange = colRange;
     }
@@ -1260,6 +1285,7 @@ var CmdShrinkColumns = /** @class */ (function () {
 }());
 var CmdSplitCell = /** @class */ (function () {
     function CmdSplitCell(table, rowIdx, colIdx, rowCount, colCount) {
+        this.cmdMacro = noopCmdMacro;
         this.table = table;
         this.rowIdx = rowIdx;
         this.colIdx = colIdx;
@@ -1346,7 +1372,7 @@ var CmdSplitCell = /** @class */ (function () {
             // 每行在被拆分单元格（包含）及后面的单元格进行扩展
             for (var i = originStartColIdx; i < originEndColIdx + 1; i++) {
                 for (var j = 0; j < finalEndRowIdx; j++) {
-                    this.cmdMacro.addCommand(new CmdExtendCols(this.table, j, i + (i - originStartColIdx) * cPerCol, blankColsInc));
+                    this.cmdMacro.addCommand(new CmdExtendCols(this.table, j, originStartColIdx, blankColsInc));
                 }
                 var tmpC = blankColsInc;
                 while (tmpC-- > 0) {
@@ -1384,16 +1410,18 @@ var CmdSplitCell = /** @class */ (function () {
 exports.CmdSplitCell = CmdSplitCell;
 var CmdSetCellContent = /** @class */ (function () {
     function CmdSetCellContent(table, row, col, content) {
+        this.prevContent = '';
         this.table = table;
         this.row = row;
         this.col = col;
         this.content = content;
     }
     CmdSetCellContent.prototype.execute = function () {
-        this.prevContent = this.table.getCellContent(this.row, this.col);
-        if (this.prevContent === null) {
+        var prevContent = this.table.getCellContent(this.row, this.col);
+        if (prevContent === null) {
             return false;
         }
+        this.prevContent = prevContent;
         return this.table.setCellContent(this.row, this.col, this.content);
     };
     CmdSetCellContent.prototype.undo = function () {
@@ -1438,11 +1466,11 @@ function insertNode(parent, child, idx) {
 exports.insertNode = insertNode;
 function getEventPath(e) {
     if ('path' in e) {
-        return e.path;
+        return e['path'];
     }
     var path = [e.target];
-    var elem = e.target.parentElement;
-    while (elem.parentElement !== null) {
+    var elem = e.target;
+    while (elem['parentElement'] !== null) {
         path.push(elem.parentElement);
         elem = elem.parentElement;
     }
@@ -1477,8 +1505,9 @@ var TableEditor = /** @class */ (function () {
         this.elem = options.elem;
         this.elem.innerHTML = '';
         var className = "table-editor-hahaha";
-        this.editable = 'editable' in options ? options.editable : true;
+        this.editable = 'editable' in options ? !!options.editable : true;
         this.eventHandler = new event_1.EditorEventHandler();
+        this.debug = 'debug' in options ? !!options.debug : false;
         this.table = new table_1.Table({
             className: className,
             data: options.data,
@@ -1500,7 +1529,6 @@ var TableEditor = /** @class */ (function () {
         });
         this.elem.appendChild(this.table.elem);
         this.cmdHistory = new CommandHistory(10);
-        this.debug = 'debug' in options ? !!options.debug : false;
     }
     TableEditor.prototype.addRow = function (rowIdx, above) {
         if (!this.editable) {
@@ -1599,7 +1627,7 @@ var TableEditor = /** @class */ (function () {
         }
     };
     TableEditor.prototype.getCellContent = function (rowIdx, colIdx) {
-        return this.table.getCellContent(rowIdx, colIdx);
+        return this.table.getCellContent(rowIdx, colIdx) || '';
     };
     TableEditor.prototype.setCellContent = function (rowIdx, colIdx, content) {
         if (!this.editable) {
@@ -1647,7 +1675,7 @@ var TableEditor = /** @class */ (function () {
         return this.table.getTableData();
     };
     TableEditor.prototype.setEditable = function (editable) {
-        this.editable = !!editable;
+        this.editable = editable;
         this.table.setEditable(this.editable);
     };
     TableEditor.prototype.addEventListener = function (name, handler) {
@@ -1880,6 +1908,9 @@ exports.tdRangeToString = tdRangeToString;
 var Td = /** @class */ (function () {
     function Td(options) {
         var _this = this;
+        this.rowRange = [-1, -1];
+        this.colRange = [-1, -1];
+        this.editable = true;
         this.content = options.content || '';
         this.elem = document.createElement('td');
         // cc is short for "content cell"
@@ -1887,12 +1918,14 @@ var Td = /** @class */ (function () {
         this.ccElem.className = 'cell-content';
         this.ccElem.innerText = this.content;
         this.elem.appendChild(this.ccElem);
-        this.elem['td'] = this;
+        // @ts-ignore
+        this.elem.td = this;
         this.setRowRange(options.rowRange);
         this.setColRange(options.colRange);
         this.props = options.props || {};
         if (this.props.style) {
             Object.keys(this.props.style).forEach(function (k) {
+                // @ts-ignore
                 _this.elem.style[k] = _this.props.style[k];
             });
         }
@@ -1935,9 +1968,6 @@ var Td = /** @class */ (function () {
         }
     };
     Td.prototype.setEditable = function (editable) {
-        if (this.editable === editable) {
-            return;
-        }
         this.editable = editable;
         if (this.editable) {
             this.ccElem.contentEditable = 'true';
@@ -1952,6 +1982,7 @@ exports.Td = Td;
 var Tr = /** @class */ (function () {
     function Tr(tds) {
         var _this = this;
+        this.colCount = 0;
         this.tds = tds || [];
         this.elem = document.createElement('tr');
         this.tds.forEach(function (td) {
@@ -2101,25 +2132,31 @@ var Tr = /** @class */ (function () {
     };
     Tr.prototype.extendCols = function (colIdx, offsetCols) {
         var targetTd;
-        var targetIdx;
+        var targetIdx = -1;
         // 设置为"空洞"的开始
-        var prevIdx = 0;
+        var holeStart = 0;
         for (var i = 0; i < this.tds.length; i++) {
             var td = this.tds[i];
             var colRange = td.getColRange();
-            if ((colIdx >= colRange[0] && colIdx <= colIdx) || (colIdx >= prevIdx && colIdx < colRange[0])) {
-                targetTd = td;
-                targetIdx = i;
+            if (colIdx >= holeStart && colIdx < colRange[0]) {
+                // 在空洞里，就把后面的都往后移动
+                for (var j = i; j < this.tds.length; j++) {
+                    var tmpTd = this.tds[j];
+                    var tmpColRange = tmpTd.getColRange();
+                    tmpTd.setColRange([tmpColRange[0] + offsetCols, tmpColRange[1] + offsetCols]);
+                }
+                break;
             }
-            prevIdx = colRange[1] + 1;
-        }
-        if (targetTd) {
-            var colRange = targetTd.getColRange();
-            targetTd.setColRange([colRange[0], colRange[1] + offsetCols]);
-            for (var i = targetIdx + 1; i < this.tds.length; i++) {
-                colRange = this.tds[i].getColRange();
-                this.tds[i].setColRange([colRange[0] + offsetCols, colRange[1] + offsetCols]);
+            else if (colIdx >= colRange[0] && colIdx <= colRange[1]) {
+                // 如果在单元格里，就把当前单元格扩展，把后面的单元格后移
+                td.setColRange([colRange[0], colRange[1] + offsetCols]);
+                for (var j = i + 1; j < this.tds.length; j++) {
+                    var tmpColRange = this.tds[j].getColRange();
+                    this.tds[j].setColRange([tmpColRange[0] + offsetCols, tmpColRange[1] + offsetCols]);
+                }
+                break;
             }
+            holeStart = colRange[1] + 1;
         }
     };
     Tr.prototype.setColContent = function (n) {
@@ -2127,6 +2164,7 @@ var Tr = /** @class */ (function () {
     };
     return Tr;
 }());
+exports.Tr = Tr;
 var MouseMode;
 (function (MouseMode) {
     MouseMode[MouseMode["NONE"] = 0] = "NONE";
@@ -2138,11 +2176,18 @@ var Table = /** @class */ (function () {
         var _this = this;
         this.colCount = 0;
         this.mouseMode = MouseMode.NONE;
+        this.mouseDownPos = { pageX: 0, pageY: 0, clientX: 0, clientY: 0 };
+        // 拖动的竖线的状态变量
+        this.colElsResizing = [];
+        this.resizeRange = [-1, -1];
+        // 开始拖拽的单元格
+        this.tdSelectStart = { r: 0, c: 0 };
         this.elem = document.createElement('table');
         this.elem.className = options.className;
-        this.elem.innerHTML = '<colgroup></colgroup><tbody></tbody>';
-        this.colgroupElem = this.elem.querySelector('colgroup');
-        this.tbodyElem = this.elem.querySelector('tbody');
+        this.colgroupElem = document.createElement('colgroup');
+        this.tbodyElem = document.createElement('tbody');
+        this.elem.appendChild(this.colgroupElem);
+        this.elem.appendChild(this.tbodyElem);
         this.trs = [];
         this.editable = options.editable;
         this.resizeable = options.resizeable;
@@ -2152,16 +2197,13 @@ var Table = /** @class */ (function () {
         this.onCellFocus = options.onCellFocus;
         this.onCellBlur = options.onCellBlur;
         this.onMouseMove = options.onMouseMove;
-        if (!options.data) {
-            options.data = [[{
-                        row: [0, 0],
-                        col: [0, 0],
-                        content: '',
-                        style: {}
-                    }]];
-        }
+        var data = options.data || [[{
+                    row: [0, 0],
+                    col: [0, 0],
+                    content: '',
+                    style: {}
+                }]];
         try {
-            var data = options.data;
             if (data.length === 0) {
                 return;
             }
@@ -2190,7 +2232,7 @@ var Table = /** @class */ (function () {
                         props: { style: style }
                     }));
                     if ('width' in tdData) {
-                        cwc_1.add(colRange, tdData.width);
+                        cwc_1.add(colRange, tdData['width']);
                     }
                     if (_this.colCount < colRange[1]) {
                         _this.colCount = colRange[1];
@@ -2254,6 +2296,7 @@ var Table = /** @class */ (function () {
             var ep = dom_1.getEventPath(e);
             var target = e.target;
             if (_this.eventTargetIsCellContent(e)) {
+                // @ts-ignore
                 var td = ep[1].td;
                 td.setContent(target['innerText'], false);
             }
@@ -2270,8 +2313,9 @@ var Table = /** @class */ (function () {
                 clientY: e.clientY
             };
             var target = e.target;
+            // @ts-ignore
             var td = target['parentNode']['td'];
-            var tmpIdx = td.getColRange()[0] + (target['offsetX'] < RESIZE_OFFSET ? 0 : 1);
+            var tmpIdx = td.getColRange()[0] + (e.offsetX < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
                 if (!_this.resizeable) {
                     return;
@@ -2284,6 +2328,7 @@ var Table = /** @class */ (function () {
                 var colEls = _this.colgroupElem.children;
                 var maxLeftOffset = +colEls[tmpIdx + 1]['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
                 var colEl = colEls[tmpIdx];
+                // @ts-ignore
                 colEl['originWidth'] = +colEl.style.width.slice(0, -2);
                 if (tmpIdx === colEls.length) {
                     // 最后一条竖线
@@ -2294,6 +2339,7 @@ var Table = /** @class */ (function () {
                     var maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
                     _this.resizeRange = [maxLeftOffset, maxRightOffset];
                     var leftColEl = colEls[tmpIdx - 1];
+                    // @ts-ignore
                     leftColEl['originWidth'] = +leftColEl.style.width.slice(0, -2);
                     _this.colElsResizing = [leftColEl, colEl];
                 }
@@ -2314,7 +2360,7 @@ var Table = /** @class */ (function () {
             var target = e.target;
             var ep = dom_1.getEventPath(e);
             if (_this.mouseMode === MouseMode.NONE) {
-                if (_this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > e.target['clientWidth'] - RESIZE_OFFSET)) {
+                if (_this.eventTargetIsCellContent(e) && (e.offsetX < RESIZE_OFFSET || e.offsetX > target['clientWidth'] - RESIZE_OFFSET)) {
                     // 鼠标在竖线上
                     if (_this.resizeable) {
                         _this.elem.style.cursor = 'col-resize';
@@ -2334,9 +2380,11 @@ var Table = /** @class */ (function () {
                         ? Math.min(startPageX - e.pageX, _this.resizeRange[0])
                         : -Math.min(e.pageX - startPageX, _this.resizeRange[1]);
                     var leftColEl = _this.colElsResizing[0];
+                    // @ts-ignore
                     leftColEl.style.width = leftColEl['originWidth'] - leftOffset + "px";
                     if (_this.colElsResizing.length > 1) {
                         var rightColEl = _this.colElsResizing[1];
+                        // @ts-ignore
                         rightColEl.style.width = rightColEl['originWidth'] + leftOffset + "px";
                     }
                 }
@@ -2356,8 +2404,11 @@ var Table = /** @class */ (function () {
         });
         this.elem.addEventListener('focusin', function (e) {
             if (_this.eventTargetIsCellContent(e)) {
-                e.target['parentElement']['style'].background = _this.cellFocusedBg;
-                var td = e.target['parentElement'].td;
+                var target = e.target;
+                var tdEl = target.parentElement;
+                tdEl.style.background = _this.cellFocusedBg;
+                // @ts-ignore
+                var td = tdEl.td;
                 var rowRange = td.getRowRange();
                 var colRange = td.getColRange();
                 _this.onCellFocus(new event_1.TECellFocusEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
@@ -2365,8 +2416,11 @@ var Table = /** @class */ (function () {
         });
         this.elem.addEventListener('focusout', function (e) {
             if (_this.eventTargetIsCellContent(e)) {
-                e.target['parentElement']['style'].background = '';
-                var td = e.target['parentElement'].td;
+                var target = e.target;
+                var tdEl = target.parentElement;
+                tdEl.style.background = '';
+                // @ts-ignore
+                var td = tdEl.td;
                 var rowRange = td.getRowRange();
                 var colRange = td.getColRange();
                 _this.onCellBlur(new event_1.TECellBlurEvent([rowRange[0], rowRange[1]], [colRange[0], colRange[1]]));
@@ -2539,7 +2593,7 @@ var Table = /** @class */ (function () {
                 if (rowspan !== rowRange[1] - rowRange[0] + 1) {
                     return "Rowspan not match. rowIndex: " + i + ", colIndex: " + j;
                 }
-                if (td.getContent() !== tdElem.firstChild['innerText']) {
+                if (td.getContent() !== tdElem.children[0].innerText) {
                     return "Td content not match. rowIndex: " + i + ", colIndex: " + j;
                 }
             }
@@ -2563,7 +2617,7 @@ var Table = /** @class */ (function () {
         var colEls = this.colgroupElem.children;
         var colWidth = [];
         for (var i = 0; i < colEls.length; i++) {
-            colWidth.push(+colEls[i]['style'].width.slice(0, -2));
+            colWidth.push(+colEls[i].style.width.slice(0, -2));
         }
         return {
             rows: rows,
@@ -2652,8 +2706,8 @@ var Table = /** @class */ (function () {
 exports.Table = Table;
 var ColWidthCalculator = /** @class */ (function () {
     function ColWidthCalculator() {
-        this.data = Object.create(null);
         this.result = [];
+        this.data = Object.create(null);
     }
     ColWidthCalculator.prototype.add = function (colRange, width) {
         if (typeof width !== 'number') {
@@ -2662,7 +2716,7 @@ var ColWidthCalculator = /** @class */ (function () {
         if (colRange[0] === colRange[1]) {
             if (colRange[0] > this.result.length - 1) {
                 for (var i = this.result.length; i <= colRange[0]; i++) {
-                    this.result.push(null);
+                    this.result.push(0);
                 }
                 this.result[colRange[0]] = width;
             }
@@ -2678,7 +2732,7 @@ var ColWidthCalculator = /** @class */ (function () {
         var _this = this;
         if (colCount > this.result.length) {
             for (var i = this.result.length; i < colCount; i++) {
-                this.result.push(null);
+                this.result.push(0);
             }
         }
         var isNum = typeof colWidth === 'number';
