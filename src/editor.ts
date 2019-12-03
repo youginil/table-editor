@@ -20,7 +20,7 @@ type EditorOptions = {
     colWidth?: number | Array<number>
     editable?: boolean
     resizeable?: boolean
-    cellFocusedBg?: string
+    cellFocusedBackground?: string
     borderColor?: string
     debug?: boolean
 }
@@ -49,7 +49,7 @@ export class TableEditor {
             colWidth: options.colWidth || [],
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
-            cellFocusedBg: options.cellFocusedBg || '',
+            cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
             debug: this.debug,
             onCellFocus: (v) => {

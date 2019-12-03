@@ -224,6 +224,28 @@ class CmdSetCellColRange implements Command {
     }
 }
 
+class CmdSetColCount implements Command {
+    private table: Table;
+    private readonly colCount: number;
+    private prevColCount: number = 0;
+
+    constructor(table: Table, colCount: number) {
+        this.table = table;
+        this.colCount = colCount;
+    }
+
+    execute(): boolean {
+        this.prevColCount = this.table.getColCount();
+        this.table.setColCount(this.colCount);
+        return true;
+    }
+
+    undo(): boolean {
+        this.table.setColCount(this.prevColCount);
+        return true;
+    }
+}
+
 class CmdAddBlankRow implements Command {
     private table: Table;
     private readonly rowIdx: number;
@@ -462,21 +484,13 @@ export class CmdAddColumn implements Command {
                 holeStart = colRange[1] + 1;
             }
         }
-        const success = this.cmdMacro.execute();
-        if (success) {
-            const c = this.table.getColCount();
-            this.table.setColCount(c + 1);
-        }
-        return success;
+        const c = this.table.getColCount();
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, c + 1));
+        return this.cmdMacro.execute();
     }
 
     undo(): boolean {
-        const success = this.cmdMacro.undo();
-        if (success) {
-            const c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        return this.cmdMacro.undo();
     }
 }
 
@@ -530,21 +544,13 @@ export class CmdDelColumn implements Command {
             });
             this.cmdMacro.addCommand(new CmdMoveCol(this.table, i, this.colIdx, -offset));
         });
-        const success = this.cmdMacro.execute();
-        if (success) {
-            const c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        const c = this.table.getColCount();
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, c - 1));
+        return this.cmdMacro.execute();
     }
 
     undo(): boolean {
-        const success = this.cmdMacro.undo();
-        if (success) {
-            const c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        return this.cmdMacro.undo();
     }
 }
 
@@ -613,7 +619,7 @@ class CmdMoveCol implements Command {
 }
 
 class CmdExtendRows implements Command {
-    private table: Table;
+    private readonly table: Table;
     private readonly rowIdx: number;
     private readonly offsetRows: number;
     private cmdMacro: CommandMacro = noopCmdMacro;
@@ -850,11 +856,8 @@ class CmdShrinkColumns implements Command {
                 this.cmdMacro.addCommand(...cmdList);
             }
         }
-        const success = this.cmdMacro.execute();
-        if (success) {
-            this.table.setColCount(this.table.getColCount() - colCountShrinked);
-        }
-        return success;
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, this.table.getColCount() - colCountShrinked));
+        return this.cmdMacro.execute();
     }
 
     undo(): boolean {
@@ -923,12 +926,12 @@ export class CmdSplitCell implements Command {
             }
             for (let i = originStartRowIdx; i < originEndRowIdx + 1; i++) {
                 const tmpIdx = i + (cPerRow - 1) * (i - originStartRowIdx);
+                this.cmdMacro.addCommand(new CmdExtendRows(this.table, tmpIdx, blankRowsInc));
                 // 把被拆分单元格所在的所有行向下扩展
                 let tmpC = blankRowsInc;
                 while (tmpC-- > 0) {
                     this.cmdMacro.addCommand(new CmdAddBlankRow(this.table, tmpIdx + 1));
                 }
-                this.cmdMacro.addCommand(new CmdExtendRows(this.table, tmpIdx, blankRowsInc));
             }
         } else {
             rowStep = originRowCount / this.rowCount;
@@ -980,12 +983,8 @@ export class CmdSplitCell implements Command {
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             }
         }
-        this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table));
-        const success = this.cmdMacro.execute();
-        if (success) {
-            this.table.setColCount(this.table.getColCount() + this.colCount - 1);
-        }
-        return success;
+        this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table), new CmdSetColCount(this.table, this.table.getColCount() + this.colCount - 1));
+        return this.cmdMacro.execute();
     }
 
     undo(): boolean {

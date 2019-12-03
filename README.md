@@ -24,15 +24,15 @@ te.destroy();
 
 ### Constructor options
 
- Name              | Type                    | Attributes | Description
-------------------|-------------------------|------------|-------------
-elem              | HTMLElement             |            | Table container element
-data              | TableData, TableCells   |            | Table data
-colWidth          | number, Array<number>   | <optional\> | Column width. "number" means all columns has same width.<br>Use "Array<number>" define width of special column. The default is 50
-editable          | boolean                 | <optional\> | Table is editable or not. The default is true.
-cellFocusedBg     | string                  | <optional\> | Background of cell which is focused. The default is transparent.
-borderColor       | string                  | <optional\> | Border color of cell.
-debug             | boolean                 | <optional\> | Debug switch. The default is false.
+ Name                     | Type                    | Attributes | Description
+--------------------------|-------------------------|------------|-------------
+elem                      | HTMLElement             |            | Table container element
+data                      | TableData, TableCells   |            | Table data
+colWidth                  | number, Array<number>   | <optional\> | Column width. "number" means all columns has same width.<br>Use "Array<number>" define width of special column. The default is 50
+editable                  | boolean                 | <optional\> | Table is editable or not. The default is true.
+cellFocusedBackground     | string                  | <optional\> | Background of cell which is focused. The default is transparent.
+borderColor               | string                  | <optional\> | Border color of cell.
+debug                     | boolean                 | <optional\> | Debug switch. The default is false.
 
 ### Methods
 

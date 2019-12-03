@@ -461,6 +461,12 @@ class Table {
                     td.setEditable(this.editable);
                 });
             });
+            // 校验一下
+            const errMsg = this.validate();
+            if (errMsg) {
+                log.error('Invalid table structure.', `${errMsg}`);
+                return;
+            }
         } catch (e) {
             log.error('Invalid table data.', options.data, e);
             return;
@@ -767,6 +773,7 @@ class Table {
         if (this.trs.length !== this.tbodyElem.children.length) {
             return 'Row number not match';
         }
+        // 校验数据与生成的表格信息是否一致
         for (let i = 0; i < this.trs.length; i++) {
             const tds = this.trs[i].getTds();
             const tdElems = this.tbodyElem.children[i].children as HTMLCollection;
@@ -795,6 +802,94 @@ class Table {
                 if (td.getContent() !== (tdElem.children[0] as HTMLElement).innerText) {
                     return `Td content not match. rowIndex: ${i}, colIndex: ${j}`;
                 }
+            }
+        }
+        // 校验表格是否为正常表格
+        const totalColCount = this.colgroupElem.children.length;
+        const trs = this.tbodyElem.children;
+        // 空洞集合
+        let holes: Array<{depth: number, range: TdRange}> = [];
+        for (let tri = 0; tri < trs.length; tri++) {
+            const tds = trs[tri].children;
+            // 创建出实体的部分
+            const solidRanges: Array<{fill: number, total: number, range: TdRange}> = [];
+            if (holes.length === 0) {
+                solidRanges.push({
+                    fill: 0,
+                    total: totalColCount,
+                    range: [0, totalColCount - 1]
+                });
+            } else {
+                let tmpColIdx = 0;
+                for (let hi = 0; hi < holes.length; hi++) {
+                    const holeStart = holes[hi].range[0];
+                    if (holeStart > tmpColIdx) {
+                        solidRanges.push({
+                            fill: 0,
+                            total: holeStart - tmpColIdx,
+                            range: [tmpColIdx, holeStart - 1]
+                        });
+                    }
+                    tmpColIdx = holes[hi].range[1] + 1;
+                    if (hi === holes.length && tmpColIdx < totalColCount) {
+                        solidRanges.push({
+                            fill: 0,
+                            total: totalColCount - tmpColIdx,
+                            range: [tmpColIdx, totalColCount - 1]
+                        });
+                    }
+                }
+            }
+            // 遍历当前行的单元格，往实体部分填充
+            let solidIdx = 0;
+            const newHoles: Array<{depth: number, range: TdRange}> = [];
+            for (let tdi = 0; tdi < tds.length; tdi++) {
+                const td = tds[tdi];
+                // @ts-ignore
+                const colspan = td.hasAttribute('colspan') ? +td.getAttribute('colspan') : 1;
+                // @ts-ignore
+                const rowspan = td.hasAttribute('rowspan') ? +td.getAttribute('rowspan') : 1;
+                const solid = solidRanges[solidIdx];
+                if (colspan <= solid.total - solid.fill) {
+                    solid.fill += colspan;
+                } else {
+                    return `Invalid Row: ${tri} near Cell: ${tdi}`;
+                }
+                if (tdi === tds.length - 1) {
+                    if (solid.fill !== solid.total || solidIdx < solidRanges.length - 1) {
+                        return `Invalid Row: ${tri}`;
+                    }
+                } else if (solid.fill === solid.total) {
+                    if (solidIdx === solidRanges.length - 1) {
+                        return `Invalid Row: ${tri}`;
+                    }
+                    solidIdx++;
+                }
+                // 如果单元格跨行，就保存到新的空洞
+                if (rowspan > 1) {
+                    const tmpStartColIdx = solid.range[0] + solid.fill - 1;
+                    newHoles.push({
+                        depth: rowspan - 1,
+                        range: [tmpStartColIdx, tmpStartColIdx + colspan - 1]
+                    });
+                }
+            }
+            // 把空洞集合过滤掉已经到底的空洞
+            holes = holes.filter((item) => {
+                item.depth--;
+                return item.depth > 0;
+            });
+            // 把新的空洞插入到空洞集合并进行排序
+            holes.push(...newHoles);
+            // 校验空洞集合数据合法性
+            for (let hi = 0; hi < holes.length; hi++) {
+                if (hi !== holes.length - 1 && holes[hi].range[1] >= holes[hi + 1].range[0]) {
+                    return `Invalid table structure`;
+                }
+            }
+            // 如果是最后一行，没有空洞了
+            if (tri === trs.length - 1 && holes.length > 0) {
+                return 'Invalid Table structure';
             }
         }
         return '';

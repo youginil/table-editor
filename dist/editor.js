@@ -706,6 +706,23 @@ var CmdSetCellColRange = /** @class */ (function () {
     };
     return CmdSetCellColRange;
 }());
+var CmdSetColCount = /** @class */ (function () {
+    function CmdSetColCount(table, colCount) {
+        this.prevColCount = 0;
+        this.table = table;
+        this.colCount = colCount;
+    }
+    CmdSetColCount.prototype.execute = function () {
+        this.prevColCount = this.table.getColCount();
+        this.table.setColCount(this.colCount);
+        return true;
+    };
+    CmdSetColCount.prototype.undo = function () {
+        this.table.setColCount(this.prevColCount);
+        return true;
+    };
+    return CmdSetColCount;
+}());
 var CmdAddBlankRow = /** @class */ (function () {
     function CmdAddBlankRow(table, rowIdx) {
         this.table = table;
@@ -918,20 +935,12 @@ var CmdAddColumn = /** @class */ (function () {
                 holeStart = colRange[1] + 1;
             }
         }
-        var success = this.cmdMacro.execute();
-        if (success) {
-            var c = this.table.getColCount();
-            this.table.setColCount(c + 1);
-        }
-        return success;
+        var c = this.table.getColCount();
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, c + 1));
+        return this.cmdMacro.execute();
     };
     CmdAddColumn.prototype.undo = function () {
-        var success = this.cmdMacro.undo();
-        if (success) {
-            var c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        return this.cmdMacro.undo();
     };
     return CmdAddColumn;
 }());
@@ -983,20 +992,12 @@ var CmdDelColumn = /** @class */ (function () {
             });
             _this.cmdMacro.addCommand(new CmdMoveCol(_this.table, i, _this.colIdx, -offset));
         });
-        var success = this.cmdMacro.execute();
-        if (success) {
-            var c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        var c = this.table.getColCount();
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, c - 1));
+        return this.cmdMacro.execute();
     };
     CmdDelColumn.prototype.undo = function () {
-        var success = this.cmdMacro.undo();
-        if (success) {
-            var c = this.table.getColCount();
-            this.table.setColCount(c - 1);
-        }
-        return success;
+        return this.cmdMacro.undo();
     };
     return CmdDelColumn;
 }());
@@ -1272,11 +1273,8 @@ var CmdShrinkColumns = /** @class */ (function () {
                 (_a = this.cmdMacro).addCommand.apply(_a, cmdList);
             }
         }
-        var success = this.cmdMacro.execute();
-        if (success) {
-            this.table.setColCount(this.table.getColCount() - colCountShrinked);
-        }
-        return success;
+        this.cmdMacro.addCommand(new CmdSetColCount(this.table, this.table.getColCount() - colCountShrinked));
+        return this.cmdMacro.execute();
     };
     CmdShrinkColumns.prototype.undo = function () {
         return this.cmdMacro.undo();
@@ -1336,12 +1334,12 @@ var CmdSplitCell = /** @class */ (function () {
             }
             for (var i = originStartRowIdx; i < originEndRowIdx + 1; i++) {
                 var tmpIdx = i + (cPerRow - 1) * (i - originStartRowIdx);
+                this.cmdMacro.addCommand(new CmdExtendRows(this.table, tmpIdx, blankRowsInc));
                 // 把被拆分单元格所在的所有行向下扩展
                 var tmpC = blankRowsInc;
                 while (tmpC-- > 0) {
                     this.cmdMacro.addCommand(new CmdAddBlankRow(this.table, tmpIdx + 1));
                 }
-                this.cmdMacro.addCommand(new CmdExtendRows(this.table, tmpIdx, blankRowsInc));
             }
         }
         else {
@@ -1395,12 +1393,8 @@ var CmdSplitCell = /** @class */ (function () {
                 this.cmdMacro.addCommand(new CmdAddCell(this.table, tmpTd));
             }
         }
-        this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table));
-        var success = this.cmdMacro.execute();
-        if (success) {
-            this.table.setColCount(this.table.getColCount() + this.colCount - 1);
-        }
-        return success;
+        this.cmdMacro.addCommand(new CmdRemoveBlankRows(this.table), new CmdSetColCount(this.table, this.table.getColCount() + this.colCount - 1));
+        return this.cmdMacro.execute();
     };
     CmdSplitCell.prototype.undo = function () {
         return this.cmdMacro.undo();
@@ -1514,7 +1508,7 @@ var TableEditor = /** @class */ (function () {
             colWidth: options.colWidth || [],
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
-            cellFocusedBg: options.cellFocusedBg || '',
+            cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
             debug: this.debug,
             onCellFocus: function (v) {
@@ -2279,6 +2273,12 @@ var Table = /** @class */ (function () {
                     td.setEditable(_this.editable);
                 });
             });
+            // 校验一下
+            var errMsg = this.validate();
+            if (errMsg) {
+                log_1.default.error('Invalid table structure.', "" + errMsg);
+                return;
+            }
         }
         catch (e) {
             log_1.default.error('Invalid table data.', options.data, e);
@@ -2568,6 +2568,7 @@ var Table = /** @class */ (function () {
         if (this.trs.length !== this.tbodyElem.children.length) {
             return 'Row number not match';
         }
+        // 校验数据与生成的表格信息是否一致
         for (var i = 0; i < this.trs.length; i++) {
             var tds = this.trs[i].getTds();
             var tdElems = this.tbodyElem.children[i].children;
@@ -2596,6 +2597,97 @@ var Table = /** @class */ (function () {
                 if (td.getContent() !== tdElem.children[0].innerText) {
                     return "Td content not match. rowIndex: " + i + ", colIndex: " + j;
                 }
+            }
+        }
+        // 校验表格是否为正常表格
+        var totalColCount = this.colgroupElem.children.length;
+        var trs = this.tbodyElem.children;
+        // 空洞集合
+        var holes = [];
+        for (var tri = 0; tri < trs.length; tri++) {
+            var tds = trs[tri].children;
+            // 创建出实体的部分
+            var solidRanges = [];
+            if (holes.length === 0) {
+                solidRanges.push({
+                    fill: 0,
+                    total: totalColCount,
+                    range: [0, totalColCount - 1]
+                });
+            }
+            else {
+                var tmpColIdx = 0;
+                for (var hi = 0; hi < holes.length; hi++) {
+                    var holeStart = holes[hi].range[0];
+                    if (holeStart > tmpColIdx) {
+                        solidRanges.push({
+                            fill: 0,
+                            total: holeStart - tmpColIdx,
+                            range: [tmpColIdx, holeStart - 1]
+                        });
+                    }
+                    tmpColIdx = holes[hi].range[1] + 1;
+                    if (hi === holes.length && tmpColIdx < totalColCount) {
+                        solidRanges.push({
+                            fill: 0,
+                            total: totalColCount - tmpColIdx,
+                            range: [tmpColIdx, totalColCount - 1]
+                        });
+                    }
+                }
+            }
+            // 遍历当前行的单元格，往实体部分填充
+            var solidIdx = 0;
+            var newHoles = [];
+            for (var tdi = 0; tdi < tds.length; tdi++) {
+                var td = tds[tdi];
+                // @ts-ignore
+                var colspan = td.hasAttribute('colspan') ? +td.getAttribute('colspan') : 1;
+                // @ts-ignore
+                var rowspan = td.hasAttribute('rowspan') ? +td.getAttribute('rowspan') : 1;
+                var solid = solidRanges[solidIdx];
+                if (colspan <= solid.total - solid.fill) {
+                    solid.fill += colspan;
+                }
+                else {
+                    return "Invalid Row: " + tri + " near Cell: " + tdi;
+                }
+                if (tdi === tds.length - 1) {
+                    if (solid.fill !== solid.total || solidIdx < solidRanges.length - 1) {
+                        return "Invalid Row: " + tri;
+                    }
+                }
+                else if (solid.fill === solid.total) {
+                    if (solidIdx === solidRanges.length - 1) {
+                        return "Invalid Row: " + tri;
+                    }
+                    solidIdx++;
+                }
+                // 如果单元格跨行，就保存到新的空洞
+                if (rowspan > 1) {
+                    var tmpStartColIdx = solid.range[0] + solid.fill - 1;
+                    newHoles.push({
+                        depth: rowspan - 1,
+                        range: [tmpStartColIdx, tmpStartColIdx + colspan - 1]
+                    });
+                }
+            }
+            // 把空洞集合过滤掉已经到底的空洞
+            holes = holes.filter(function (item) {
+                item.depth--;
+                return item.depth > 0;
+            });
+            // 把新的空洞插入到空洞集合并进行排序
+            holes.push.apply(holes, newHoles);
+            // 校验空洞集合数据合法性
+            for (var hi = 0; hi < holes.length; hi++) {
+                if (hi !== holes.length - 1 && holes[hi].range[1] >= holes[hi + 1].range[0]) {
+                    return "Invalid table structure";
+                }
+            }
+            // 如果是最后一行，没有空洞了
+            if (tri === trs.length - 1 && holes.length > 0) {
+                return 'Invalid Table structure';
             }
         }
         return '';
