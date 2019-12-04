@@ -2268,11 +2268,26 @@ var Table = /** @class */ (function () {
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
-            this.trs.forEach(function (tr) {
-                tr.getTds().forEach(function (td) {
-                    td.setEditable(_this.editable);
-                });
+            // 空行
+            var blankRowIndexes_1 = [];
+            this.trs.forEach(function (tr, tri) {
+                var tds = tr.getTds();
+                if (tds.length === 0) {
+                    blankRowIndexes_1.push(tri);
+                }
+                else {
+                    tds.forEach(function (td) {
+                        td.setEditable(_this.editable);
+                    });
+                }
             });
+            if (blankRowIndexes_1.length > 0) {
+                for (var tri = blankRowIndexes_1.length - 1; tri >= 0; tri--) {
+                    this.trs[tri].getElem().remove();
+                    this.trs.splice(tri, 1);
+                }
+                log_1.default.warn("Rows: (" + blankRowIndexes_1.join(', ') + ") are blank.");
+            }
             // 校验一下
             var errMsg = this.validate();
             if (errMsg) {
@@ -2627,7 +2642,7 @@ var Table = /** @class */ (function () {
                         });
                     }
                     tmpColIdx = holes[hi].range[1] + 1;
-                    if (hi === holes.length && tmpColIdx < totalColCount) {
+                    if (hi === holes.length - 1 && tmpColIdx < totalColCount) {
                         solidRanges.push({
                             fill: 0,
                             total: totalColCount - tmpColIdx,

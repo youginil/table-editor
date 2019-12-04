@@ -456,11 +456,25 @@ class Table {
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
-            this.trs.forEach((tr) => {
-                tr.getTds().forEach((td) => {
-                    td.setEditable(this.editable);
-                });
+            // 空行
+            const blankRowIndexes: Array<number> = [];
+            this.trs.forEach((tr, tri) => {
+                const tds = tr.getTds();
+                if (tds.length === 0) {
+                    blankRowIndexes.push(tri);
+                } else {
+                    tds.forEach((td) => {
+                        td.setEditable(this.editable);
+                    });
+                }
             });
+            if (blankRowIndexes.length > 0) {
+                for (let tri = blankRowIndexes.length - 1; tri >= 0; tri--) {
+                    this.trs[tri].getElem().remove();
+                    this.trs.splice(tri, 1);
+                }
+                log.warn(`Rows: (${blankRowIndexes.join(', ')}) are blank.`);
+            }
             // 校验一下
             const errMsg = this.validate();
             if (errMsg) {
@@ -831,7 +845,7 @@ class Table {
                         });
                     }
                     tmpColIdx = holes[hi].range[1] + 1;
-                    if (hi === holes.length && tmpColIdx < totalColCount) {
+                    if (hi === holes.length - 1 && tmpColIdx < totalColCount) {
                         solidRanges.push({
                             fill: 0,
                             total: totalColCount - tmpColIdx,
