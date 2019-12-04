@@ -2291,7 +2291,7 @@ var Table = /** @class */ (function () {
             // 校验一下
             var errMsg = this.validate();
             if (errMsg) {
-                log_1.default.error('Invalid table structure.', "" + errMsg);
+                log_1.default.error('Table data error.', this.trs, "" + errMsg);
                 return;
             }
         }
@@ -2697,12 +2697,12 @@ var Table = /** @class */ (function () {
             // 校验空洞集合数据合法性
             for (var hi = 0; hi < holes.length; hi++) {
                 if (hi !== holes.length - 1 && holes[hi].range[1] >= holes[hi + 1].range[0]) {
-                    return "Invalid table structure";
+                    return "Invalid table structure. " + JSON.stringify(holes);
                 }
             }
             // 如果是最后一行，没有空洞了
             if (tri === trs.length - 1 && holes.length > 0) {
-                return 'Invalid Table structure';
+                return "Invalid Table structure. " + JSON.stringify(holes);
             }
         }
         return '';
