@@ -1,5 +1,6 @@
 const pkg = require('../package.json');
 import {TableData, TableCells, Table, TdRange} from "./table";
+import {isString} from "./utils";
 import {
     Command,
     CmdAddRow,
@@ -21,8 +22,9 @@ type EditorOptions = {
     fullWidth?: boolean
     editable?: boolean
     resizeable?: boolean
-    cellFocusedBackground?: string
     borderColor?: string
+    cellStyle?: {[prop: string]: string}
+    cellClass?: string
     debug?: boolean
 }
 
@@ -51,8 +53,9 @@ export class TableEditor {
             fullWidth: !!options.fullWidth,
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : false,
-            cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
+            cellStyle: 'cellStyle' in options ? options.cellStyle as {[prop: string]: string} : {},
+            cellClass: isString(options.cellClass) ? `${options.cellClass}` : '',
             debug: this.debug,
             onCellFocus: (v) => {
                 this.eventHandler.trigger(EDITOR_EVENTS.CELL_FOCUS, v)

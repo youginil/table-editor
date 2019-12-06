@@ -1488,6 +1488,7 @@ exports.getEventPath = getEventPath;
 Object.defineProperty(exports, "__esModule", { value: true });
 var pkg = __webpack_require__(/*! ../package.json */ "./package.json");
 var table_1 = __webpack_require__(/*! ./table */ "./src/table.ts");
+var utils_1 = __webpack_require__(/*! ./utils */ "./src/utils.ts");
 var command_1 = __webpack_require__(/*! ./command */ "./src/command.ts");
 __webpack_require__(/*! ../style/editor.scss */ "./style/editor.scss");
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
@@ -1509,8 +1510,9 @@ var TableEditor = /** @class */ (function () {
             fullWidth: !!options.fullWidth,
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : false,
-            cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
+            cellStyle: 'cellStyle' in options ? options.cellStyle : {},
+            cellClass: utils_1.isString(options.cellClass) ? "" + options.cellClass : '',
             debug: this.debug,
             onCellFocus: function (v) {
                 _this.eventHandler.trigger(event_1.EDITOR_EVENTS.CELL_FOCUS, v);
@@ -1908,6 +1910,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var log_1 = __webpack_require__(/*! ./log */ "./src/log.ts");
 var dom_1 = __webpack_require__(/*! ./dom */ "./src/dom.ts");
 var event_1 = __webpack_require__(/*! ./event */ "./src/event.ts");
+var utils_1 = __webpack_require__(/*! ./utils */ "./src/utils.ts");
 function tdRangeToString(range) {
     if (range.length === 0) {
         return '';
@@ -1947,6 +1950,9 @@ var Td = /** @class */ (function () {
                 // @ts-ignore
                 _this.ccElem.style[k] = _this.props.style[k];
             });
+        }
+        if (this.props.class) {
+            this.ccElem.classList.add(this.props.class);
         }
     }
     Td.prototype.getRowRange = function () {
@@ -2214,7 +2220,8 @@ var Table = /** @class */ (function () {
         this.defaultColWidth = options.defaultColWidth;
         this.editable = options.editable;
         this.resizeable = options.resizeable;
-        this.cellFocusedBg = options.cellFocusedBg;
+        this.cellStyle = options.cellStyle;
+        this.cellClass = options.cellClass;
         this.borderColor = options.borderColor;
         this.debug = options.debug;
         this.onCellFocus = options.onCellFocus;
@@ -2249,7 +2256,8 @@ var Table = /** @class */ (function () {
                         colRange: colRange,
                         content: tdData.content,
                         props: {
-                            style: 'style' in tdData ? tdData.style : {}
+                            style: 'style' in tdData ? utils_1.extend(_this.cellStyle, tdData.style) : _this.cellStyle,
+                            class: _this.cellClass
                         }
                     }));
                     if ('width' in tdData) {
@@ -2275,7 +2283,8 @@ var Table = /** @class */ (function () {
                             colRange: td.col,
                             content: td.content,
                             props: {
-                                style: 'style' in td ? td.style : {}
+                                style: 'style' in td ? utils_1.extend(_this.cellStyle, td.style) : _this.cellStyle,
+                                class: _this.cellClass
                             }
                         });
                     });
@@ -2448,7 +2457,6 @@ var Table = /** @class */ (function () {
             if (_this.eventTargetIsCellContent(e)) {
                 var target = e.target;
                 var tdEl = target.parentElement;
-                tdEl.style.background = _this.cellFocusedBg;
                 // @ts-ignore
                 var td = tdEl.td;
                 var rowRange = td.getRowRange();
@@ -2475,6 +2483,9 @@ var Table = /** @class */ (function () {
         }
         if (!options.props.style) {
             options.props.style = {};
+        }
+        if (this.cellClass) {
+            options.props.class = this.cellClass;
         }
         if (this.borderColor) {
             options.borderColor = this.borderColor;
@@ -2880,6 +2891,35 @@ var ColWidthCalculator = /** @class */ (function () {
     };
     return ColWidthCalculator;
 }());
+
+
+/***/ }),
+
+/***/ "./src/utils.ts":
+/*!**********************!*\
+  !*** ./src/utils.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function extend(target, source) {
+    var result = {};
+    Object.keys(target).forEach(function (k) {
+        result[k] = target[k];
+    });
+    Object.keys(source).forEach(function (k) {
+        result[k] = source[k];
+    });
+    return result;
+}
+exports.extend = extend;
+function isString(v) {
+    return typeof v === 'string';
+}
+exports.isString = isString;
 
 
 /***/ }),

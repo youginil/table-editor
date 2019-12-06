@@ -45,6 +45,9 @@
         .mt10 {
             margin-top: 10px;
         }
+        .cell-style:focus {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
@@ -140,11 +143,6 @@ var tab;
           col: [j, j],
           content: '(' + i + ',' + i + '),(' + j + ',' + j + ')',
           // width: 60,
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }
         });
       }
     }
@@ -153,9 +151,15 @@ var tab;
       data: data,
       defaultColWidth: 160,
       // fullWidth: true,
-      cellFocusedBg: 'red',
+      cellFocusedBackground: 'red',
       borderColor: 'blue',
       resizeable: true,
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      },
+      cellClass: 'cell-style',
       debug: true
     });
 

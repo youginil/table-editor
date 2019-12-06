@@ -1,6 +1,7 @@
 import log from './log';
 import {insertNode, getEventPath} from "./dom";
 import {TECellBlurEvent, TECellFocusEvent, TEMouseMoveEvent} from "./event";
+import {extend} from "./utils";
 
 type TdRange = [number, number];
 type TdData = {
@@ -16,7 +17,8 @@ type TableData = Array<TrData>
 interface Props {
     style?: {
         [prop: string]: string
-    }
+    },
+    class?: string
 }
 
 type TableCells = Array<TdData>;
@@ -72,6 +74,9 @@ class Td {
                 // @ts-ignore
                 this.ccElem.style[k] = this.props.style[k];
             });
+        }
+        if (this.props.class) {
+            this.ccElem.classList.add(this.props.class);
         }
     }
 
@@ -334,7 +339,8 @@ type tableOptions = {
     fullWidth: boolean
     editable: boolean
     resizeable: boolean
-    cellFocusedBg: string
+    cellStyle: {[prop: string]: string}
+    cellClass: string
     borderColor: string
     debug: boolean
     onCellFocus: (e: TECellFocusEvent) => void
@@ -351,7 +357,8 @@ class Table {
     private readonly trs: Array<Tr>;
     private readonly defaultColWidth: number;
     private colCount: number = 0;
-    private readonly cellFocusedBg: string;
+    private readonly cellStyle: {[prop: string]: string};
+    private readonly cellClass: string;
     private readonly borderColor: string;
     private editable: boolean;
     private readonly resizeable: boolean;
@@ -382,7 +389,8 @@ class Table {
         this.defaultColWidth = options.defaultColWidth;
         this.editable = options.editable;
         this.resizeable = options.resizeable;
-        this.cellFocusedBg = options.cellFocusedBg;
+        this.cellStyle = options.cellStyle;
+        this.cellClass = options.cellClass;
         this.borderColor = options.borderColor;
         this.debug = options.debug;
         this.onCellFocus = options.onCellFocus;
@@ -417,7 +425,8 @@ class Table {
                         colRange,
                         content: tdData.content,
                         props: {
-                            style: 'style' in tdData ? tdData.style as {[prop: string]: string} : {}
+                            style: 'style' in tdData ? extend(this.cellStyle, tdData.style as {[prop: string]: string}) : this.cellStyle,
+                            class: this.cellClass
                         }
                     }));
                     if ('width' in tdData) {
@@ -442,7 +451,8 @@ class Table {
                             colRange: td.col,
                             content: td.content,
                             props: {
-                                style: 'style' in td ? td.style as {[prop: string]: string} : {}
+                                style: 'style' in td ? extend(this.cellStyle, td.style as {[prop: string]: string}) : this.cellStyle,
+                                class: this.cellClass
                             }
                         });
                     });
@@ -613,7 +623,6 @@ class Table {
             if (this.eventTargetIsCellContent(e)) {
                 const target = e.target as HTMLElement;
                 const tdEl = target.parentElement as HTMLElement;
-                tdEl.style.background = this.cellFocusedBg;
                 // @ts-ignore
                 const td: Td = tdEl.td;
                 const rowRange = td.getRowRange();
@@ -642,6 +651,9 @@ class Table {
         }
         if (!options.props.style) {
             options.props.style = {};
+        }
+        if (this.cellClass) {
+            options.props.class = this.cellClass;
         }
         if (this.borderColor) {
             options.borderColor = this.borderColor;
