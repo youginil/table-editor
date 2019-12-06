@@ -24,11 +24,12 @@ te.destroy();
 
 ### Constructor options
 
- Name                     | Type                    | Attributes | Description
---------------------------|-------------------------|------------|-------------
-elem                      | HTMLElement             |            | Table container element
-data                      | TableData, TableCells   |            | Table data
-colWidth                  | number, Array<number>   | <optional\> | Column width. "number" means all columns has same width.<br>Use "Array<number>" define width of special column. The default is 50
+ Name                     | Type                    | Attributes  | Description
+--------------------------|-------------------------|-------------|-------------
+elem                      | HTMLElement             |             | Table container element
+data                      | TableData, TableCells   |             | Table data
+defaultColWidth           | number                  | <optional\> | Default column width for cells those do not have width property. The default is 0.
+fullWidth                 | boolean                 | <optional\> | The table size is 100% or not. The default is false
 editable                  | boolean                 | <optional\> | Table is editable or not. The default is true.
 cellFocusedBackground     | string                  | <optional\> | Background of cell which is focused. The default is transparent.
 borderColor               | string                  | <optional\> | Border color of cell.
@@ -36,16 +37,16 @@ debug                     | boolean                 | <optional\> | Debug switch
 
 ### Methods
 
-* `addRow(rowIdx: number, above: boolean)`
-* `delRow(rowIdx: number)`
-* `addColumn(colIdx: number, left: boolean)`
-* `delColumn(colIdx: number): void`
-* `mergeCells(rowRange: TdRange, colRange: TdRange)`
-* `splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number)`
+* `addRow(rowIdx: number, above: boolean): boolean`
+* `delRow(rowIdx: number): boolean`
+* `addColumn(colIdx: number, left: boolean): boolean`
+* `delColumn(colIdx: number): boolean`
+* `mergeCells(rowRange: TdRange, colRange: TdRange): boolean`
+* `splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number): boolean`
 * `getCellContent(rowIdx: number, colIdx: number): string`
-* `setCellContent(rowIdx: number, colIdx: number, content: string)`
-* `undo()`
-* `redo()`
+* `setCellContent(rowIdx: number, colIdx: number, content: string): boolean`
+* `undo(): boolean`
+* `redo(): boolean`
 * `getTableData(): { rows: Array<Array<object>>, colWidth: Array<number> }`
 * `setEditable(editable: boolean)`
 * `addEventListener(name: string, handler: Function)`

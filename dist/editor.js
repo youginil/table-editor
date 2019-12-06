@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".table-editor-hahaha {\n  display: inline-block;\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-hahaha * {\n    box-sizing: border-box; }\n  .table-editor-hahaha > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-hahaha > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
+exports.push([module.i, ".table-editor-hahaha {\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-hahaha.full-width {\n    width: 100%; }\n  .table-editor-hahaha * {\n    box-sizing: border-box; }\n  .table-editor-hahaha > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-hahaha > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
 
 
 /***/ }),
@@ -1505,7 +1505,8 @@ var TableEditor = /** @class */ (function () {
         this.table = new table_1.Table({
             className: className,
             data: options.data,
-            colWidth: options.colWidth || [],
+            defaultColWidth: options.defaultColWidth || 0,
+            fullWidth: !!options.fullWidth,
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
             cellFocusedBg: options.cellFocusedBackground || '',
@@ -1527,98 +1528,110 @@ var TableEditor = /** @class */ (function () {
     TableEditor.prototype.addRow = function (rowIdx, above) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Add one row " + (above ? 'above' : 'below') + " row: " + rowIdx);
         }
         var cmd = new command_1.CmdAddRow(this.table, rowIdx, above);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.delRow = function (rowIdx) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Delete row " + rowIdx);
         }
         var cmd = new command_1.CmdDelRow(this.table, rowIdx);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.addColumn = function (colIdx, left) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Add one column " + (left ? 'left' : 'right') + " of column " + colIdx);
         }
         var cmd = new command_1.CmdAddColumn(this.table, colIdx, left);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.delColumn = function (colIdx) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Delete column " + colIdx);
         }
         var cmd = new command_1.CmdDelColumn(this.table, colIdx);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.mergeCells = function (rowRange, colRange) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Merge cells. Row: " + rowRange[0] + " ~ " + rowRange[1] + ", Column: " + colRange[0] + " ~ " + colRange[1]);
         }
         var cmd = new command_1.CmdMergeCells(this.table, rowRange, colRange);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.splitCell = function (rowIdx, colIdx, rowCount, colCount) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Split cell (" + rowIdx + ", " + colIdx + ") into " + rowCount + " rows and " + colCount + " columns");
         }
         var cmd = new command_1.CmdSplitCell(this.table, rowIdx, colIdx, rowCount, colCount);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.getCellContent = function (rowIdx, colIdx) {
         return this.table.getCellContent(rowIdx, colIdx) || '';
@@ -1626,31 +1639,34 @@ var TableEditor = /** @class */ (function () {
     TableEditor.prototype.setCellContent = function (rowIdx, colIdx, content) {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info("Set cell (" + rowIdx + ", " + colIdx + ") \"" + content + "\"");
         }
         var cmd = new command_1.CmdSetCellContent(this.table, rowIdx, colIdx, content);
-        if (cmd.execute()) {
+        var success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.undo = function () {
         if (!this.editable) {
             log_1.log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log_1.log.info('Undo');
         }
-        this.cmdHistory.undo();
+        var success = this.cmdHistory.undo();
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     };
     TableEditor.prototype.redo = function () {
         if (!this.editable) {
@@ -1716,18 +1732,24 @@ var CommandHistory = /** @class */ (function () {
         }
     };
     CommandHistory.prototype.undo = function () {
-        if (this.divide > 0 && !this.commands[--this.divide].undo()) {
-            this.clear();
+        if (this.divide === 0) {
+            return false;
         }
+        var success = this.commands[this.divide - 1].undo();
+        if (success) {
+            this.divide--;
+        }
+        return success;
     };
     CommandHistory.prototype.redo = function () {
-        if (this.divide < this.top && !this.commands[this.divide++].execute()) {
-            this.clear();
+        if (this.divide === this.top) {
+            return false;
         }
-    };
-    CommandHistory.prototype.clear = function () {
-        this.commands.length = 0;
-        this.divide = this.top = 0;
+        var success = this.commands[this.divide + 1].execute();
+        if (success) {
+            this.divide++;
+        }
+        return success;
     };
     CommandHistory.prototype.printStatus = function () {
         log_1.log.info("\uD83D\uDC7D Command History: Capability: " + this.cap + "  Undo: " + this.divide + "  Redo: " + (this.top - this.divide), this.commands);
@@ -2178,11 +2200,15 @@ var Table = /** @class */ (function () {
         this.tdSelectStart = { r: 0, c: 0 };
         this.elem = document.createElement('table');
         this.elem.className = options.className;
+        if (options.fullWidth) {
+            this.elem.classList.add('full-width');
+        }
         this.colgroupElem = document.createElement('colgroup');
         this.tbodyElem = document.createElement('tbody');
         this.elem.appendChild(this.colgroupElem);
         this.elem.appendChild(this.tbodyElem);
         this.trs = [];
+        this.defaultColWidth = options.defaultColWidth;
         this.editable = options.editable;
         this.resizeable = options.resizeable;
         this.cellFocusedBg = options.cellFocusedBg;
@@ -2261,10 +2287,15 @@ var Table = /** @class */ (function () {
             }
             this.colCount++;
             var i = 0;
-            var colWidthCalculated = cwc_1.calc(this.colCount, options.colWidth);
+            var colWidthCalculated = cwc_1.calc(this.colCount, this.defaultColWidth);
             while (i < this.colCount) {
                 var colElem = document.createElement('col');
-                colElem.style.width = (colWidthCalculated[i] || Table.defaultColWidth) + "px";
+                if (colWidthCalculated[i] > 0) {
+                    colElem.style.width = colWidthCalculated[i] + "px";
+                }
+                else if (this.defaultColWidth > 0) {
+                    colElem.style.width = this.defaultColWidth + "px";
+                }
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
@@ -2487,7 +2518,9 @@ var Table = /** @class */ (function () {
             return 0;
         }
         var colElem = document.createElement('col');
-        colElem.style.width = Table.defaultColWidth + "px";
+        if (this.defaultColWidth > 0) {
+            colElem.style.width = this.defaultColWidth + "px";
+        }
         dom_1.insertNode(this.colgroupElem, colElem, colIdx);
         return 1;
     };
@@ -2807,7 +2840,6 @@ var Table = /** @class */ (function () {
     Table.prototype.destroy = function () {
         this.elem.remove();
     };
-    Table.defaultColWidth = 50;
     return Table;
 }());
 exports.Table = Table;

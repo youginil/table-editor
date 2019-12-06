@@ -326,7 +326,8 @@ enum MouseMode {
 type tableOptions = {
     className: string
     data: TableData | TableCells
-    colWidth: number | Array<number>
+    defaultColWidth: number
+    fullWidth: boolean
     editable: boolean
     resizeable: boolean
     cellFocusedBg: string
@@ -340,12 +341,11 @@ type tableOptions = {
 type mousePos = { pageX: number, pageY: number, clientX: number, clientY: number };
 
 class Table {
-    static defaultColWidth: number = 50;
-
     readonly elem: HTMLTableElement;
     private readonly colgroupElem: HTMLElement;
     private readonly tbodyElem: HTMLElement;
     private readonly trs: Array<Tr>;
+    private readonly defaultColWidth: number;
     private colCount: number = 0;
     private readonly cellFocusedBg: string;
     private readonly borderColor: string;
@@ -367,11 +367,15 @@ class Table {
     constructor(options: tableOptions) {
         this.elem = document.createElement('table');
         this.elem.className = options.className;
+        if (options.fullWidth) {
+            this.elem.classList.add('full-width');
+        }
         this.colgroupElem = document.createElement('colgroup');
         this.tbodyElem = document.createElement('tbody');
         this.elem.appendChild(this.colgroupElem);
         this.elem.appendChild(this.tbodyElem);
         this.trs = [];
+        this.defaultColWidth = options.defaultColWidth;
         this.editable = options.editable;
         this.resizeable = options.resizeable;
         this.cellFocusedBg = options.cellFocusedBg;
@@ -449,10 +453,14 @@ class Table {
             }
             this.colCount++;
             let i = 0;
-            const colWidthCalculated = cwc.calc(this.colCount, options.colWidth);
+            const colWidthCalculated = cwc.calc(this.colCount, this.defaultColWidth);
             while (i < this.colCount) {
                 const colElem = document.createElement('col');
-                colElem.style.width = `${colWidthCalculated[i] || Table.defaultColWidth}px`;
+                if (colWidthCalculated[i] > 0) {
+                    colElem.style.width = `${colWidthCalculated[i]}px`;
+                } else if (this.defaultColWidth > 0) {
+                    colElem.style.width = `${this.defaultColWidth}px`;
+                }
                 this.colgroupElem.appendChild(colElem);
                 i++;
             }
@@ -680,7 +688,9 @@ class Table {
             return 0;
         }
         const colElem = document.createElement('col');
-        colElem.style.width = `${Table.defaultColWidth}px`;
+        if (this.defaultColWidth > 0) {
+            colElem.style.width = `${this.defaultColWidth}px`;
+        }
         insertNode(this.colgroupElem, colElem, colIdx);
         return 1;
     }

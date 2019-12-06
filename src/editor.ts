@@ -17,7 +17,8 @@ import {EDITOR_EVENTS, EditorEventHandler} from "./event";
 type EditorOptions = {
     elem: HTMLElement
     data: TableData | TableCells
-    colWidth?: number | Array<number>
+    defaultColWidth?: number
+    fullWidth?: boolean
     editable?: boolean
     resizeable?: boolean
     cellFocusedBackground?: string
@@ -46,7 +47,8 @@ export class TableEditor {
         this.table = new Table({
             className: className,
             data: options.data,
-            colWidth: options.colWidth || [],
+            defaultColWidth: options.defaultColWidth || 0,
+            fullWidth: !!options.fullWidth,
             editable: this.editable,
             resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
             cellFocusedBg: options.cellFocusedBackground || '',
@@ -66,141 +68,156 @@ export class TableEditor {
         this.cmdHistory = new CommandHistory(10);
     }
 
-    addRow(rowIdx: number, above: boolean) {
+    addRow(rowIdx: number, above: boolean): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Add one row ${above ? 'above' : 'below'} row: ${rowIdx}`);
         }
         const cmd = new CmdAddRow(this.table, rowIdx, above);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    delRow(rowIdx: number) {
+    delRow(rowIdx: number): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Delete row ${rowIdx}`);
         }
         const cmd = new CmdDelRow(this.table, rowIdx);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    addColumn(colIdx: number, left: boolean) {
+    addColumn(colIdx: number, left: boolean): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Add one column ${left ? 'left' : 'right'} of column ${colIdx}`);
         }
         const cmd = new CmdAddColumn(this.table, colIdx, left);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    delColumn(colIdx: number) {
+    delColumn(colIdx: number): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Delete column ${colIdx}`);
         }
         const cmd = new CmdDelColumn(this.table, colIdx);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    mergeCells(rowRange: TdRange, colRange: TdRange) {
+    mergeCells(rowRange: TdRange, colRange: TdRange): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Merge cells. Row: ${rowRange[0]} ~ ${rowRange[1]}, Column: ${colRange[0]} ~ ${colRange[1]}`);
         }
         const cmd = new CmdMergeCells(this.table, rowRange, colRange);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number) {
+    splitCell(rowIdx: number, colIdx: number, rowCount: number, colCount: number): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Split cell (${rowIdx}, ${colIdx}) into ${rowCount} rows and ${colCount} columns`);
         }
         const cmd = new CmdSplitCell(this.table, rowIdx, colIdx, rowCount, colCount);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
     getCellContent(rowIdx: number, colIdx: number): string {
         return this.table.getCellContent(rowIdx, colIdx) || '';
     }
 
-    setCellContent(rowIdx: number, colIdx: number, content: string) {
+    setCellContent(rowIdx: number, colIdx: number, content: string): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info(`Set cell (${rowIdx}, ${colIdx}) "${content}"`);
         }
         const cmd = new CmdSetCellContent(this.table, rowIdx, colIdx, content);
-        if (cmd.execute()) {
+        const success = cmd.execute();
+        if (success) {
             this.cmdHistory.push(cmd);
         }
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
-    undo() {
+    undo(): boolean {
         if (!this.editable) {
             log.warn(NOT_EDITABLE_MSG);
-            return;
+            return false;
         }
         if (this.debug) {
             log.info('Undo');
         }
-        this.cmdHistory.undo();
+        const success = this.cmdHistory.undo();
         if (this.debug) {
             this.printDebugInfo();
         }
+        return success;
     }
 
     redo() {
@@ -274,21 +291,26 @@ class CommandHistory {
         }
     }
 
-    undo() {
-        if (this.divide > 0 && !(this.commands[--this.divide] as Command).undo()) {
-            this.clear();
+    undo(): boolean {
+        if (this.divide === 0) {
+            return false;
         }
+        const success = (this.commands[this.divide - 1] as Command).undo();
+        if (success) {
+            this.divide--;
+        }
+        return success;
     }
 
     redo() {
-        if (this.divide < this.top && !(this.commands[this.divide++] as Command).execute()) {
-            this.clear();
+        if (this.divide === this.top) {
+            return false;
         }
-    }
-
-    clear() {
-        this.commands.length = 0;
-        this.divide = this.top = 0;
+        const success = (this.commands[this.divide + 1] as Command).execute();
+        if (success) {
+            this.divide++;
+        }
+        return success;
     }
 
     printStatus() {
