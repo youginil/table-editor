@@ -139,18 +139,23 @@ var tab;
           row: [i, i],
           col: [j, j],
           content: '(' + i + ',' + i + '),(' + j + ',' + j + ')',
-          // width: 60
+          // width: 60,
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }
         });
       }
     }
     window.tab = new window.te.TableEditor({
       elem: getElementById('preview'),
       data: data,
-      // defaultColWidth: 160,
+      defaultColWidth: 160,
       // fullWidth: true,
       cellFocusedBg: 'red',
       borderColor: 'blue',
-      // resizeable: false,
+      resizeable: true,
       debug: true
     });
 

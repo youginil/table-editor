@@ -20,7 +20,7 @@ te.destroy();
 {start row index}, {end row index}
 {start column index}, {end column index}
 ````
-![](./table-index.png)
+![row index and column index](./table-index.png)
 
 ### Constructor options
 
@@ -31,6 +31,7 @@ data                      | TableData, TableCells   |             | Table data
 defaultColWidth           | number                  | <optional\> | Default column width for cells those do not have width property. The default is 0.
 fullWidth                 | boolean                 | <optional\> | The table size is 100% or not. The default is false
 editable                  | boolean                 | <optional\> | Table is editable or not. The default is true.
+resizeable                | boolean                 | <optional\> | Table is resizeable or not. The default is false.
 cellFocusedBackground     | string                  | <optional\> | Background of cell which is focused. The default is transparent.
 borderColor               | string                  | <optional\> | Border color of cell.
 debug                     | boolean                 | <optional\> | Debug switch. The default is false.

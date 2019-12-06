@@ -50,7 +50,7 @@ export class TableEditor {
             defaultColWidth: options.defaultColWidth || 0,
             fullWidth: !!options.fullWidth,
             editable: this.editable,
-            resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
+            resizeable: 'resizeable' in options ? !!options['resizeable'] : false,
             cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
             debug: this.debug,

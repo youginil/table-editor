@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".table-editor-hahaha {\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-hahaha.full-width {\n    width: 100%; }\n  .table-editor-hahaha * {\n    box-sizing: border-box; }\n  .table-editor-hahaha > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-hahaha > tbody > tr > td > div.cell-content {\n      display: block;\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
+exports.push([module.i, ".table-editor-hahaha {\n  border-collapse: collapse;\n  margin: 0;\n  padding: 0;\n  border: 0;\n  box-sizing: border-box; }\n  .table-editor-hahaha.full-width {\n    width: 100%; }\n  .table-editor-hahaha * {\n    box-sizing: border-box; }\n  .table-editor-hahaha > tbody > tr > td {\n    border: 1px solid #000;\n    margin: 0;\n    padding: 0; }\n    .table-editor-hahaha > tbody > tr > td > div.cell-content {\n      padding: 0 7px;\n      height: 100%;\n      min-height: 30px;\n      outline: none;\n      word-break: break-word; }\n", ""]);
 
 
 /***/ }),
@@ -1508,7 +1508,7 @@ var TableEditor = /** @class */ (function () {
             defaultColWidth: options.defaultColWidth || 0,
             fullWidth: !!options.fullWidth,
             editable: this.editable,
-            resizeable: 'resizeable' in options ? !!options['resizeable'] : true,
+            resizeable: 'resizeable' in options ? !!options['resizeable'] : false,
             cellFocusedBg: options.cellFocusedBackground || '',
             borderColor: options.borderColor || '',
             debug: this.debug,
@@ -1929,6 +1929,9 @@ var Td = /** @class */ (function () {
         this.editable = true;
         this.content = options.content || '';
         this.elem = document.createElement('td');
+        if ('borderColor' in options && options.borderColor) {
+            this.elem.style.borderColor = options.borderColor;
+        }
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
@@ -1942,7 +1945,7 @@ var Td = /** @class */ (function () {
         if (this.props.style) {
             Object.keys(this.props.style).forEach(function (k) {
                 // @ts-ignore
-                _this.elem.style[k] = _this.props.style[k];
+                _this.ccElem.style[k] = _this.props.style[k];
             });
         }
     }
@@ -2241,15 +2244,13 @@ var Table = /** @class */ (function () {
                         }
                     }
                     var tr = _this.trs[rowRange[0]];
-                    var style = {};
-                    if (_this.borderColor) {
-                        style['borderColor'] = _this.borderColor;
-                    }
                     tr.addTd(_this.createCell({
                         rowRange: rowRange,
                         colRange: colRange,
                         content: tdData.content,
-                        props: { style: style }
+                        props: {
+                            style: 'style' in tdData ? tdData.style : {}
+                        }
                     }));
                     if ('width' in tdData) {
                         cwc_1.add(colRange, tdData['width']);
@@ -2269,15 +2270,13 @@ var Table = /** @class */ (function () {
                         if ('width' in td) {
                             cwc_1.add(td.col, td.width);
                         }
-                        var style = {};
-                        if (_this.borderColor) {
-                            style['borderColor'] = _this.borderColor;
-                        }
                         return _this.createCell({
                             rowRange: td.row,
                             colRange: td.col,
                             content: td.content,
-                            props: { style: style }
+                            props: {
+                                style: 'style' in td ? td.style : {}
+                            }
                         });
                     });
                     var tr = new Tr(tds);
@@ -2363,16 +2362,13 @@ var Table = /** @class */ (function () {
             var td = target['parentNode']['td'];
             var tmpIdx = td.getColRange()[0] + (e.offsetX < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
-                if (!_this.resizeable) {
+                if (!_this.resizeable || _this.defaultColWidth <= 0) {
                     return;
-                }
-                if (e.offsetX < RESIZE_OFFSET) {
-                    tmpIdx--;
                 }
                 // 不能拖拽第一条竖线
                 _this.mouseMode = MouseMode.RESIZE;
                 var colEls = _this.colgroupElem.children;
-                var maxLeftOffset = +colEls[tmpIdx + 1]['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                var maxLeftOffset = +colEls[tmpIdx + 1]['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET - 30;
                 var colEl = colEls[tmpIdx];
                 // @ts-ignore
                 colEl['originWidth'] = +colEl.style.width.slice(0, -2);
@@ -2382,7 +2378,7 @@ var Table = /** @class */ (function () {
                     _this.colElsResizing = [colEl];
                 }
                 else {
-                    var maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                    var maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET - 30;
                     _this.resizeRange = [maxLeftOffset, maxRightOffset];
                     var leftColEl = colEls[tmpIdx - 1];
                     // @ts-ignore
@@ -2481,7 +2477,7 @@ var Table = /** @class */ (function () {
             options.props.style = {};
         }
         if (this.borderColor) {
-            options.props.style['borderColor'] = this.borderColor;
+            options.borderColor = this.borderColor;
         }
         var td = new Td(options);
         td.setEditable(this.editable);

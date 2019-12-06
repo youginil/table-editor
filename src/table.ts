@@ -39,6 +39,7 @@ type tdOptions = {
     colRange: TdRange
     content?: string
     props?: Props
+    borderColor?: string
 };
 
 class Td {
@@ -53,6 +54,9 @@ class Td {
     constructor(options: tdOptions) {
         this.content = options.content || '';
         this.elem = document.createElement('td');
+        if ('borderColor' in options && options.borderColor) {
+            this.elem.style.borderColor = options.borderColor as string;
+        }
         // cc is short for "content cell"
         this.ccElem = document.createElement('div');
         this.ccElem.className = 'cell-content';
@@ -66,7 +70,7 @@ class Td {
         if (this.props.style) {
             Object.keys(this.props.style).forEach((k) => {
                 // @ts-ignore
-                this.elem.style[k] = this.props.style[k];
+                this.ccElem.style[k] = this.props.style[k];
             });
         }
     }
@@ -408,15 +412,13 @@ class Table {
                         }
                     }
                     const tr = this.trs[rowRange[0]];
-                    const style: {[prop: string]: string} = {};
-                    if (this.borderColor) {
-                        style['borderColor'] = this.borderColor;
-                    }
                     tr.addTd(this.createCell({
                         rowRange,
                         colRange,
                         content: tdData.content,
-                        props: {style}
+                        props: {
+                            style: 'style' in tdData ? tdData.style as {[prop: string]: string} : {}
+                        }
                     }));
                     if ('width' in tdData) {
                         cwc.add(colRange, tdData['width'] as number);
@@ -435,15 +437,13 @@ class Table {
                         if ('width' in td) {
                             cwc.add(td.col, td.width as number);
                         }
-                        const style: {[prop: string]: string} = {};
-                        if (this.borderColor) {
-                            style['borderColor'] = this.borderColor;
-                        }
                         return this.createCell({
                             rowRange: td.row,
                             colRange: td.col,
                             content: td.content,
-                            props: {style}
+                            props: {
+                                style: 'style' in td ? td.style as {[prop: string]: string} : {}
+                            }
                         });
                     });
                     const tr = new Tr(tds);
@@ -528,16 +528,13 @@ class Table {
             const td = (target['parentNode'] as HTMLElement)['td'] as Td;
             let tmpIdx = td.getColRange()[0] + (e.offsetX < RESIZE_OFFSET ? 0 : 1);
             if ((e.offsetX < RESIZE_OFFSET && tmpIdx > 0) || e.offsetX > target['clientWidth'] - RESIZE_OFFSET) {
-                if (!this.resizeable) {
+                if (!this.resizeable || this.defaultColWidth <= 0) {
                     return;
-                }
-                if (e.offsetX < RESIZE_OFFSET) {
-                    tmpIdx--;
                 }
                 // 不能拖拽第一条竖线
                 this.mouseMode = MouseMode.RESIZE;
                 const colEls = this.colgroupElem.children as HTMLCollection;
-                const maxLeftOffset = +(colEls[tmpIdx + 1] as HTMLElement)['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                const maxLeftOffset = +(colEls[tmpIdx + 1] as HTMLElement)['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET - 30;
                 const colEl = colEls[tmpIdx] as HTMLElement;
                 // @ts-ignore
                 colEl['originWidth'] = +colEl.style.width.slice(0, -2);
@@ -546,7 +543,7 @@ class Table {
                     this.resizeRange = [maxLeftOffset, (this.elem.parentElement as HTMLElement).clientWidth - this.elem.clientWidth];
                     this.colElsResizing = [colEl];
                 } else {
-                    const maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET;
+                    const maxRightOffset = +colEl['style'].width.slice(0, -2) - 2 * RESIZE_OFFSET - 30;
                     this.resizeRange = [maxLeftOffset, maxRightOffset];
                     const leftColEl = colEls[tmpIdx - 1] as HTMLElement;
                     // @ts-ignore
@@ -647,7 +644,7 @@ class Table {
             options.props.style = {};
         }
         if (this.borderColor) {
-            options.props.style['borderColor'] = this.borderColor;
+            options.borderColor = this.borderColor;
         }
         const td = new Td(options);
         td.setEditable(this.editable);
