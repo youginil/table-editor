@@ -36,6 +36,7 @@ borderColor               | string                  | <optional\> | Border color
 cellStyle                 | object                  | <optional\> | Style color of cell.
 cellClass                 | string                  | <optional\> | Class name of cell.
 debug                     | boolean                 | <optional\> | Debug switch. The default is false.
+maxUndoTimes              | number                  | <optional\> | Max times of undo. The default is 10.
 
 ### Methods
 

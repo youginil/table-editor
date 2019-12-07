@@ -26,6 +26,7 @@ type EditorOptions = {
     cellStyle?: {[prop: string]: string}
     cellClass?: string
     debug?: boolean
+    maxUndoTimes?: number
 }
 
 const NOT_EDITABLE_MSG = 'Table can not be edit';
@@ -68,7 +69,7 @@ export class TableEditor {
             }
         });
         this.elem.appendChild(this.table.elem);
-        this.cmdHistory = new CommandHistory(10);
+        this.cmdHistory = new CommandHistory('maxUndoTimes' in options && options.maxUndoTimes as number > 0 ? options.maxUndoTimes as number : 10);
     }
 
     addRow(rowIdx: number, above: boolean): boolean {
@@ -274,7 +275,7 @@ class CommandHistory {
     private top: number = 0;
 
     constructor(max: number) {
-        this.cap = max;
+        this.cap = +max;
         this.commands = [];
     }
 

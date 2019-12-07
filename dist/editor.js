@@ -1525,7 +1525,7 @@ var TableEditor = /** @class */ (function () {
             }
         });
         this.elem.appendChild(this.table.elem);
-        this.cmdHistory = new CommandHistory(10);
+        this.cmdHistory = new CommandHistory('maxUndoTimes' in options && options.maxUndoTimes > 0 ? options.maxUndoTimes : 10);
     }
     TableEditor.prototype.addRow = function (rowIdx, above) {
         if (!this.editable) {
@@ -1714,7 +1714,7 @@ var CommandHistory = /** @class */ (function () {
     function CommandHistory(max) {
         this.divide = 0;
         this.top = 0;
-        this.cap = max;
+        this.cap = +max;
         this.commands = [];
     }
     CommandHistory.prototype.push = function (cmd) {
