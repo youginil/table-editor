@@ -214,7 +214,7 @@ class CmdSetCellColRange implements Command {
     }
 
     undo(): boolean {
-        const td = this.table.getCell(this.newRange[0], this.newRange[1]);
+        const td = this.table.getCell(this.rowIdx, this.newRange[0]);
         if (!td) {
             log.error('CmdSetCellColRange', `Cell not found. rowIdx: ${this.newRange[0]}, colIdx: ${this.newRange[1]}`);
             return false;

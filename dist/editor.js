@@ -696,7 +696,7 @@ var CmdSetCellColRange = /** @class */ (function () {
         return true;
     };
     CmdSetCellColRange.prototype.undo = function () {
-        var td = this.table.getCell(this.newRange[0], this.newRange[1]);
+        var td = this.table.getCell(this.rowIdx, this.newRange[0]);
         if (!td) {
             log_1.default.error('CmdSetCellColRange', "Cell not found. rowIdx: " + this.newRange[0] + ", colIdx: " + this.newRange[1]);
             return false;
