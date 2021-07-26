@@ -14,7 +14,7 @@ import '../style/editor.scss';
 import { log } from './log';
 import { EDITOR_EVENTS, EditorEventHandler } from './event';
 
-type EditorOptions = {
+export type EditorOptions = {
   elem: HTMLElement;
   data: TableData | TableCells;
   defaultColWidth?: number;

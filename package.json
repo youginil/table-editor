@@ -1,9 +1,9 @@
 {
   "name": "web-table-editor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "edit table structure and content",
   "main": "./dist/web-table-editor.umd.js",
-  "types": "./dist/web-table-editor.d.ts",
+  "typings": "./lib/index.d.ts",
   "module": "./dist/web-table-editor.es.js",
   "exports": {
     ".": {
