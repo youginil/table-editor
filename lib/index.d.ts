@@ -1,6 +1,9 @@
 import { TableData, TableCells, TdRange } from './table';
 import '../style/editor.scss';
-declare type EditorOptions = {
+/**
+ * @public
+ */
+export declare type EditorOptions = {
     elem: HTMLElement;
     data: TableData | TableCells;
     defaultColWidth?: number;
@@ -46,5 +49,4 @@ export default class TableEditor {
     private printDebugInfo;
     destroy(): void;
 }
-export {};
 //# sourceMappingURL=index.d.ts.map

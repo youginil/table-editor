@@ -5,8 +5,24 @@
 ```ts
 
 // @public (undocumented)
+export type EditorOptions = {
+    elem: HTMLElement;
+    data: TableData | TableCells;
+    defaultColWidth?: number;
+    fullWidth?: boolean;
+    editable?: boolean;
+    resizeable?: boolean;
+    borderColor?: string;
+    cellStyle?: {
+        [prop: string]: string;
+    };
+    cellClass?: string;
+    debug?: boolean;
+    maxUndoTimes?: number;
+};
+
+// @public (undocumented)
 class TableEditor {
-    // Warning: (ae-forgotten-export) The symbol "EditorOptions" needs to be exported by the entry point index.d.ts
     constructor(options: EditorOptions);
     // (undocumented)
     addColumn(colIdx: number, left: boolean): boolean;
@@ -45,6 +61,11 @@ class TableEditor {
     undo(): boolean;
 }
 export default TableEditor;
+
+// Warnings were encountered during analysis:
+//
+// src/index.ts:22:3 - (ae-forgotten-export) The symbol "TableData" needs to be exported by the entry point index.d.ts
+// src/index.ts:22:3 - (ae-forgotten-export) The symbol "TableCells" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -14,6 +14,9 @@ import '../style/editor.scss';
 import { log } from './log';
 import { EDITOR_EVENTS, EditorEventHandler } from './event';
 
+/**
+ * @public
+ */
 export type EditorOptions = {
   elem: HTMLElement;
   data: TableData | TableCells;
