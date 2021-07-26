@@ -1,11 +1,11 @@
-# table-editor
+# Table Editor
 ![npm](https://img.shields.io/npm/v/web-table-editor)
 
 Web table editor
 
 ### Usage
 ````
-import {TableEditor} from 'web-table-editor';
+import TableEditor from 'web-table-editor';
 
 // create instance
 const te = new TableEditor({...});

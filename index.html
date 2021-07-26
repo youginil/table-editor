@@ -1,251 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Table Editor</title>
-    <script src="editor.js"></script>
+    <script type="module" src="main.ts"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        html, body {
-            height: 100%;
-        }
+      html,
+      body {
+        height: 100%;
+      }
 
-        input[type="number"] {
-            width: 50px;
-        }
+      input[type="number"] {
+        width: 50px;
+      }
 
-        #wrapper {
-            display: flex;
-            height: 100%;
-            padding: 10px;
-        }
+      #wrapper {
+        display: flex;
+        height: 100%;
+        padding: 10px;
+      }
 
-        #control {
-            width: 500px;
-            flex-shrink: 0;
-            height: 100%;
-            overflow-y: auto;
-        }
+      #control {
+        width: 500px;
+        flex-shrink: 0;
+        height: 100%;
+        overflow-y: auto;
+      }
 
-        #preview {
-            flex-grow: 1;
-            height: 100%;
-            overflow: auto;
-        }
+      #preview {
+        flex-grow: 1;
+        height: 100%;
+        overflow: auto;
+      }
 
-        .mt20 {
-            margin-top: 20px;
-        }
+      .mt20 {
+        margin-top: 20px;
+      }
 
-        .mt10 {
-            margin-top: 10px;
-        }
-        .cell-style:focus {
-            background-color: red;
-        }
+      .mt10 {
+        margin-top: 10px;
+      }
+      .cell-style:focus {
+        background-color: red;
+      }
     </style>
-</head>
-<body>
-<div id="wrapper">
-    <div id="control">
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="wrapper">
+      <div id="control">
         <h2>生成表格</h2>
         <div class="mt10">
-            <input id="table-row" type="number" value="2" placeholder="行数">
-            <span>行</span>
-            <input id="table-column" type="number" value="3" placeholder="列数">
-            <span>列</span>
-            <button type="button" id="generate-table">生成表格</button>
+          <input id="table-row" type="number" value="2" placeholder="行数" />
+          <span>行</span>
+          <input id="table-column" type="number" value="3" placeholder="列数" />
+          <span>列</span>
+          <button type="button" id="generate-table">生成表格</button>
         </div>
         <h2 class="mt20">行操作</h2>
         <div class="mt10">
-            <span>在第</span>
-            <input id="add-row-num" type="number" value="1">
-            <span>行</span>
-            <input id="add-row-above" type="radio" name="addRowPos" value="0" checked="checked">
-            <label for="add-row-above">上面</label>
-            <input id="add-row-below" type="radio" name="addRowPos" value="1">
-            <label for="add-row-below">下面</label>
-            <button type="button" id="add-row">新增一行</button>
+          <span>在第</span>
+          <input id="add-row-num" type="number" value="1" />
+          <span>行</span>
+          <input
+            id="add-row-above"
+            type="radio"
+            name="addRowPos"
+            value="0"
+            checked="checked"
+          />
+          <label for="add-row-above">上面</label>
+          <input id="add-row-below" type="radio" name="addRowPos" value="1" />
+          <label for="add-row-below">下面</label>
+          <button type="button" id="add-row">新增一行</button>
         </div>
         <div class="mt10">
-            <span>删除第</span>
-            <input id="del-row-num" type="number" value="1">
-            <span>行</span>
-            <button type="button" id="del-row">删除</button>
+          <span>删除第</span>
+          <input id="del-row-num" type="number" value="1" />
+          <span>行</span>
+          <button type="button" id="del-row">删除</button>
         </div>
         <h2 class="mt20">列操作</h2>
         <div class="mt10">
-            <span>在第</span>
-            <input id="add-col-num" type="number" value="1">
-            <span>列</span>
-            <input id="add-col-left" type="radio" name="addColPos" value="0" checked="checked">
-            <label for="add-col-left">左边</label>
-            <input id="add-col-right" type="radio" name="addColPos" value="1">
-            <label for="add-col-right">右边</label>
-            <button type="button" id="add-col">新增一列</button>
+          <span>在第</span>
+          <input id="add-col-num" type="number" value="1" />
+          <span>列</span>
+          <input
+            id="add-col-left"
+            type="radio"
+            name="addColPos"
+            value="0"
+            checked="checked"
+          />
+          <label for="add-col-left">左边</label>
+          <input id="add-col-right" type="radio" name="addColPos" value="1" />
+          <label for="add-col-right">右边</label>
+          <button type="button" id="add-col">新增一列</button>
         </div>
         <div class="mt10">
-            <span>删除第</span>
-            <input id="del-col-num" type="number" value="1">
-            <span>列</span>
-            <button type="button" id="del-col">删除</button>
+          <span>删除第</span>
+          <input id="del-col-num" type="number" value="1" />
+          <span>列</span>
+          <button type="button" id="del-col">删除</button>
         </div>
         <h2 class="mt20">单元格操作</h2>
         <div class="mt10">
-            <span>行：</span>
-            <input type="number" id="merge-1" value="0">
-            <span> ~ </span>
-            <input type="number" id="merge-2" value="0">
-            <span>列：</span>
-            <input type="number" id="merge-3" value="0">
-            <span> ~ </span>
-            <input type="number" id="merge-4" value="1">
-            <button type="button" id="merge">合并单元格</button>
+          <span>行：</span>
+          <input type="number" id="merge-1" value="0" />
+          <span> ~ </span>
+          <input type="number" id="merge-2" value="0" />
+          <span>列：</span>
+          <input type="number" id="merge-3" value="0" />
+          <span> ~ </span>
+          <input type="number" id="merge-4" value="1" />
+          <button type="button" id="merge">合并单元格</button>
         </div>
         <div class="mt10">
-            <span>切分</span>
-            <input type="number" id="split-1" value="1">
-            <input type="number" id="split-2" value="1">
-            <span>为</span>
-            <input type="number" id="split-3" value="2">
-            <span>行</span>
-            <input type="number" id="split-4" value="2">
-            <span>列</span>
-            <button type="button" id="split">切分单元格</button>
+          <span>切分</span>
+          <input type="number" id="split-1" value="1" />
+          <input type="number" id="split-2" value="1" />
+          <span>为</span>
+          <input type="number" id="split-3" value="2" />
+          <span>行</span>
+          <input type="number" id="split-4" value="2" />
+          <span>列</span>
+          <button type="button" id="split">切分单元格</button>
         </div>
         <h2 class="mt20">命令历史</h2>
         <div class="mt10">
-            <button type="button" id="undo">撤销</button>
-            <button type="button" id="redo">重做</button>
+          <button type="button" id="undo">撤销</button>
+          <button type="button" id="redo">重做</button>
         </div>
+      </div>
+      <div id="preview"></div>
     </div>
-    <div id="preview"></div>
-</div>
-<script>
-var tab;
-(function () {
-  function getElementById(id) {
-    return document.getElementById(id);
-  }
-  getElementById('generate-table').addEventListener('click', function () {
-    var rows = +getElementById('table-row').value;
-    var columns = +getElementById('table-column').value;
-    var data = [];
-    for (var i = 0; i < rows; i++) {
-      for (var j = 0; j < columns; j++) {
-        data.push({
-          row: [i, i],
-          col: [j, j],
-          content: '(' + i + ',' + i + '),(' + j + ',' + j + ')',
-          // width: 60,
-        });
-      }
-    }
-    data = [[{"row":[0,0],"col":[0,0],"content":"日期","width":111,"height":30},{"row":[0,0],"col":[1,1],"content":"发行安排","width":434,"height":30}],[{"row":[1,1],"col":[0,0],"content":"2019 年 10 月 29 日（T-2 日）","width":111,"height":30},{"row":[1,1],"col":[1,1],"content":"刊登募集说明书摘要和发行公告","width":434,"height":30}],[{"row":[2,2],"col":[0,0],"content":"2019 年 10 月 30 日（T-1 日）","width":111,"height":30},{"row":[2,2],"col":[1,1],"content":"网下询价确定票面利率","width":434,"height":30}],[{"row":[3,5],"col":[0,0],"content":"2019 年 10 月 31 日（T 日）","width":111,"height":91},{"row":[3,3],"col":[1,1],"content":"公告最终票面利率","width":434,"height":30}],[{"row":[4,4],"col":[1,1],"content":"网下发行起始日","width":434,"height":30}],[{"row":[5,5],"col":[1,1],"content":"主承销商向获得网下配售的合格机构投资者发送《国药集团融资租赁有限公司 2019 年公开发行公司债券（第二期）配售缴款通知书》","width":434,"height":30}],[{"row":[6,7],"col":[0,0],"content":"2019 年 11 月 1 日（T+1 日）","width":111,"height":61},{"row":[6,6],"col":[1,1],"content":"网下发行截止日","width":434,"height":30}],[{"row":[7,7],"col":[1,1],"content":"网下合格机构投资者在当日 16:00 前将认购款划至主承销商专用收款账户","width":434,"height":30}],[{"row":[8,8],"col":[0,0],"content":"2019 年 11 月 4 日（T+2 日）","width":111,"height":30},{"row":[8,8],"col":[1,1],"content":"刊登发行结果公告","width":434,"height":30}]];
-    window.tab = new window.te.TableEditor({
-      elem: getElementById('preview'),
-      data: data,
-      // defaultColWidth: 160,
-      fullWidth: true,
-      cellFocusedBackground: 'red',
-      borderColor: 'blue',
-      resizeable: true,
-      cellStyle: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      },
-      cellClass: 'cell-style',
-      debug: true
-    });
-
-    window.tab.addEventListener('cellfocus', function(e) {
-      console.log('cellfocus', e);
-    });
-
-    window.tab.addEventListener('cellblur', function(e) {
-      console.log('cellblur', e);
-    });
-
-    window.tab.addEventListener('mousemove', function (e) {
-      // console.log('mousemove', e);
-    });
-  });
-
-  window.onload = function () {
-    getElementById('generate-table').click();
-  };
-
-  function debugPos() {
-    var trs = window.tab.table.elem.querySelector('tbody').children;
-    for (let i = 0; i < trs.length; i++) {
-      var tds = trs[i].children;
-      for (let j = 0; j < tds.length; j++) {
-        var td = tds[j];
-        var rowRange = td.td.getRowRange();
-        var colRange = td.td.getColRange();
-        var content = rowRange.join(', ') + '\n' + colRange.join(', ');
-        tab.setCellContent(rowRange[0], colRange[0], content);
-      }
-    }
-  }
-
-  getElementById('add-row').addEventListener('click', function () {
-    var n = +getElementById('add-row-num').value - 1;
-    var above = +document.querySelector('[name="addRowPos"]:checked').value === 0;
-    tab.addRow(n, above);
-  });
-
-  getElementById('del-row').addEventListener('click', function () {
-    var n = +getElementById('del-row-num').value - 1;
-    tab.delRow(n);
-  });
-
-  getElementById('add-col').addEventListener('click', function () {
-    var n = +getElementById('add-col-num').value - 1;
-    var left = +document.querySelector('[name="addColPos"]:checked').value === 0;
-    tab.addColumn(n, left);
-  });
-
-  getElementById('del-col').addEventListener('click', function () {
-    var n = +getElementById('del-col-num').value - 1;
-    tab.delColumn(n);
-  });
-
-  getElementById('merge').addEventListener('click', function () {
-    var row = [
-      +getElementById('merge-1').value,
-      +getElementById('merge-2').value
-    ];
-    var col = [
-      +getElementById('merge-3').value,
-      +getElementById('merge-4').value
-    ];
-    tab.mergeCells(row, col);
-    debugPos();
-  });
-
-  getElementById('split').addEventListener('click', function () {
-    var rowIdx = +getElementById('split-1').value;
-    var colIdx = +getElementById('split-2').value;
-    var rowCount = +getElementById('split-3').value;
-    var colCount = +getElementById('split-4').value;
-    tab.splitCell(rowIdx, colIdx, rowCount, colCount);
-  });
-
-  getElementById('undo').addEventListener('click', function () {
-    tab.undo();
-  });
-
-  getElementById('redo').addEventListener('click', function () {
-    tab.redo();
-  });
-})();
-</script>
-</body>
+    <script>
+    </script>
+  </body>
 </html>

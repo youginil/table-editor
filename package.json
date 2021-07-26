@@ -2,10 +2,19 @@
   "name": "web-table-editor",
   "version": "1.0.2",
   "description": "edit table structure and content",
-  "main": "index.js",
+  "main": "./dist/web-table-editor.umd.js",
+  "types": "./dist/web-table-editor.d.ts",
+  "module": "./dist/web-table-editor.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/web-table-editor.es.js",
+      "require": "./dist/web-table-editor.umd.js"
+    }
+  },
   "scripts": {
-    "build": "./node_modules/.bin/webpack",
-    "dev": "./node_modules/.bin/webpack-dev-server --inline"
+    "dev": "vite",
+    "build": "tsc --emitDeclarationOnly && vite build && api-extractor run --local --verbose",
+    "serve": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -16,16 +25,12 @@
     "editor"
   ],
   "author": "yinliguo",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "css-loader": "^3.2.0",
-    "node-sass": "^4.13.0",
-    "sass-loader": "^8.0.0",
-    "style-loader": "^1.0.0",
-    "ts-loader": "^6.2.1",
-    "typescript": "^3.7.2",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0"
+    "@types/node": "^16.4.3",
+    "prettier": "2.3.2",
+    "sass": "^1.36.0",
+    "typescript": "^4.3.5",
+    "vite": "^2.4.3"
   }
 }
